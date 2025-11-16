@@ -1,0 +1,262 @@
+import { BrandingStorage, fileToBase64 } from '@/services/brandingStorage';
+import { DEFAULT_BRANDING } from '@/types/branding';
+import { mockBrandingSettings } from '../utils/test-utils';
+
+// Mock console methods to avoid noise in tests
+const originalConsoleLog = console.log;
+const originalConsoleError = console.error;
+
+describe('BrandingStorage', () => {
+  beforeEach(() => {
+    // Clear localStorage completely
+    localStorage.clear();
+    
+    // Clear all jest mocks but keep the localStorage mock implementation
+    jest.clearAllMocks();
+    
+    // Reset console methods
+    console.log = jest.fn();
+    console.error = jest.fn();
+  });
+
+  afterEach(() => {
+    // Clear localStorage again to ensure isolation
+    localStorage.clear();
+    
+    // Restore console methods
+    console.log = originalConsoleLog;
+    console.error = originalConsoleError;
+  });
+
+  describe('save', () => {
+    it('should save settings to localStorage', () => {
+      const setItemSpy = jest.spyOn(localStorage, 'setItem');
+      
+      BrandingStorage.save(mockBrandingSettings);
+      
+      expect(setItemSpy).toHaveBeenCalledWith(
+        'branding_settings',
+        JSON.stringify(mockBrandingSettings)
+      );
+      expect(console.log).toHaveBeenCalledWith('Branding settings saved to localStorage');
+    });
+
+    it('should handle localStorage errors gracefully', () => {
+      const testError = new Error('Storage quota exceeded');
+      jest.spyOn(localStorage, 'setItem').mockImplementation(() => {
+        throw testError;
+      });
+      
+      expect(() => BrandingStorage.save(mockBrandingSettings)).not.toThrow();
+      expect(console.error).toHaveBeenCalledWith('Failed to save branding settings:', testError);
+    });
+  });
+
+  describe('load', () => {
+    it('should load settings from localStorage', () => {
+      localStorage.setItem('branding_settings', JSON.stringify(mockBrandingSettings));
+      
+      const result = BrandingStorage.load();
+      
+      expect(result).toEqual(mockBrandingSettings);
+      expect(console.log).toHaveBeenCalledWith('Branding settings loaded from localStorage');
+    });
+
+    it('should return null when no settings exist', () => {
+      const result = BrandingStorage.load();
+      
+      expect(result).toBeNull();
+    });
+
+    it('should handle JSON parse errors gracefully', () => {
+      localStorage.setItem('branding_settings', 'invalid json');
+      
+      const result = BrandingStorage.load();
+      
+      expect(result).toBeNull();
+      expect(console.error).toHaveBeenCalledWith('Failed to load branding settings:', expect.any(Error));
+    });
+
+    it('should handle localStorage access errors gracefully', () => {
+      const testError = new Error('localStorage not available');
+      jest.spyOn(localStorage, 'getItem').mockImplementation(() => {
+        throw testError;
+      });
+      
+      const result = BrandingStorage.load();
+      
+      expect(result).toBeNull();
+      expect(console.error).toHaveBeenCalledWith('Failed to load branding settings:', testError);
+    });
+  });
+
+  describe('clear', () => {
+    it('should remove settings from localStorage', () => {
+      localStorage.setItem('branding_settings', JSON.stringify(mockBrandingSettings));
+      const removeItemSpy = jest.spyOn(localStorage, 'removeItem');
+      
+      BrandingStorage.clear();
+      
+      expect(removeItemSpy).toHaveBeenCalledWith('branding_settings');
+      expect(localStorage.getItem('branding_settings')).toBeNull();
+      expect(console.log).toHaveBeenCalledWith('Branding settings cleared from localStorage');
+    });
+
+    it('should handle localStorage errors gracefully', () => {
+      const testError = new Error('localStorage not available');
+      jest.spyOn(localStorage, 'removeItem').mockImplementation(() => {
+        throw testError;
+      });
+      
+      expect(() => BrandingStorage.clear()).not.toThrow();
+      expect(console.error).toHaveBeenCalledWith('Failed to clear branding settings:', testError);
+    });
+  });
+
+  describe('exists', () => {
+    it('should return true when settings exist', () => {
+      localStorage.setItem('branding_settings', JSON.stringify(mockBrandingSettings));
+      
+      expect(BrandingStorage.exists()).toBe(true);
+    });
+
+    it('should return false when settings do not exist', () => {
+      expect(BrandingStorage.exists()).toBe(false);
+    });
+
+    it('should return false when localStorage contains null', () => {
+      // Ensure localStorage is completely clear first
+      localStorage.clear();
+      
+      expect(BrandingStorage.exists()).toBe(false);
+    });
+  });
+
+  describe('getOrDefault', () => {
+    it('should return stored settings when they exist', () => {
+      localStorage.setItem('branding_settings', JSON.stringify(mockBrandingSettings));
+      
+      const result = BrandingStorage.getOrDefault();
+      
+      expect(result).toEqual(mockBrandingSettings);
+    });
+
+    it('should return default settings when none exist', () => {
+      const result = BrandingStorage.getOrDefault();
+      
+      expect(result).toEqual(DEFAULT_BRANDING);
+    });
+
+    it('should return default settings when loading fails', () => {
+      localStorage.setItem('branding_settings', 'invalid json');
+      
+      const result = BrandingStorage.getOrDefault();
+      
+      expect(result).toEqual(DEFAULT_BRANDING);
+    });
+  });
+
+  describe('integration tests', () => {
+    it('should save and load settings correctly', () => {
+      BrandingStorage.save(mockBrandingSettings);
+      const loaded = BrandingStorage.load();
+      
+      expect(loaded).toEqual(mockBrandingSettings);
+    });
+
+    it('should handle complete workflow', () => {
+      // Initially no settings
+      expect(BrandingStorage.exists()).toBe(false);
+      expect(BrandingStorage.load()).toBeNull();
+      expect(BrandingStorage.getOrDefault()).toEqual(DEFAULT_BRANDING);
+      
+      // Save settings
+      BrandingStorage.save(mockBrandingSettings);
+      expect(BrandingStorage.exists()).toBe(true);
+      expect(BrandingStorage.load()).toEqual(mockBrandingSettings);
+      expect(BrandingStorage.getOrDefault()).toEqual(mockBrandingSettings);
+      
+      // Clear settings
+      BrandingStorage.clear();
+      expect(BrandingStorage.exists()).toBe(false);
+      expect(BrandingStorage.load()).toBeNull();
+      expect(BrandingStorage.getOrDefault()).toEqual(DEFAULT_BRANDING);
+    });
+  });
+});
+
+describe('fileToBase64', () => {
+  let mockFileReader: any;
+
+  beforeEach(() => {
+    mockFileReader = {
+      readAsDataURL: jest.fn(),
+      result: null,
+      onload: null,
+      onerror: null,
+    };
+    
+    // Mock FileReader constructor
+    (global as any).FileReader = jest.fn(() => mockFileReader);
+  });
+
+  it('should convert file to base64 string', async () => {
+    const mockFile = new File(['test content'], 'test.txt', { type: 'text/plain' });
+    const expectedResult = 'data:text/plain;base64,dGVzdCBjb250ZW50';
+    
+    const promise = fileToBase64(mockFile);
+    
+    // Simulate successful file reading
+    mockFileReader.result = expectedResult;
+    mockFileReader.onload!({} as ProgressEvent<FileReader>);
+    
+    const result = await promise;
+    expect(result).toBe(expectedResult);
+    expect(mockFileReader.readAsDataURL).toHaveBeenCalledWith(mockFile);
+  });
+
+  it('should reject when file reading fails', async () => {
+    const mockFile = new File(['test content'], 'test.txt', { type: 'text/plain' });
+    const testError = new Error('File reading failed');
+    
+    const promise = fileToBase64(mockFile);
+    
+    // Simulate file reading error
+    mockFileReader.onerror!(testError as any);
+    
+    await expect(promise).rejects.toBe(testError);
+  });
+
+  it('should reject when result is not a string', async () => {
+    const mockFile = new File(['test content'], 'test.txt', { type: 'text/plain' });
+    
+    const promise = fileToBase64(mockFile);
+    
+    // Simulate result being ArrayBuffer instead of string
+    mockFileReader.result = new ArrayBuffer(10);
+    mockFileReader.onload!({} as ProgressEvent<FileReader>);
+    
+    await expect(promise).rejects.toEqual(new Error('Failed to convert file to base64'));
+  });
+
+  it('should handle different file types', async () => {
+    const fileTypes = [
+      { name: 'image.png', type: 'image/png' },
+      { name: 'document.pdf', type: 'application/pdf' },
+      { name: 'style.css', type: 'text/css' },
+    ];
+
+    for (const fileType of fileTypes) {
+      const mockFile = new File(['content'], fileType.name, { type: fileType.type });
+      const expectedResult = `data:${fileType.type};base64,Y29udGVudA==`;
+      
+      const promise = fileToBase64(mockFile);
+      
+      mockFileReader.result = expectedResult;
+      mockFileReader.onload!({} as ProgressEvent<FileReader>);
+      
+      const result = await promise;
+      expect(result).toBe(expectedResult);
+    }
+  });
+});
