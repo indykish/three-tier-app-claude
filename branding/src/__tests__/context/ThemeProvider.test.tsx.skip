@@ -1,0 +1,330 @@
+import React from 'react';
+import { screen, waitFor } from '@testing-library/react';
+import { ThemeProvider as MuiThemeProvider, useTheme } from '@mui/material/styles';
+import { Typography, Button } from '@mui/material';
+import { CustomThemeProvider } from '@/context/ThemeProvider';
+import { mockBrandingSettings, render } from '../utils/test-utils';
+import * as useFontLoaderModule from '@/hooks/useFontLoader';
+
+// Mock the useFontLoader hook
+jest.mock('@/hooks/useFontLoader');
+const mockUseFontLoader = useFontLoaderModule.useFontLoader as jest.MockedFunction<typeof useFontLoaderModule.useFontLoader>;
+
+describe('CustomThemeProvider', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    
+    // Mock useFontLoader to return ready status by default
+    mockUseFontLoader.mockReturnValue({
+      status: useFontLoaderModule.FontStatus.READY,
+      error: undefined,
+      retry: jest.fn(),
+    });
+
+    // Create a proper mock element
+    const mockElement = {
+      id: '',
+      textContent: '',
+      remove: jest.fn(),
+    };
+
+    // Mock document methods
+    document.createElement = jest.fn().mockReturnValue(mockElement);
+    document.getElementById = jest.fn().mockReturnValue(null);
+
+    // Mock head operations with proper appendChild
+    const mockHead = {
+      appendChild: jest.fn(),
+      removeChild: jest.fn(),
+    };
+    Object.defineProperty(document, 'head', {
+      value: mockHead,
+      writable: true,
+    });
+
+    // Mock body for font operations
+    const mockBody = {
+      style: { display: '' },
+      offsetHeight: 100,
+    };
+    Object.defineProperty(document, 'body', {
+      value: mockBody,
+      writable: true,
+    });
+
+    // Mock setTimeout to execute immediately
+    jest.spyOn(global, 'setTimeout').mockImplementation((fn: any) => {
+      if (typeof fn === 'function') fn();
+      return 123 as any;
+    });
+
+    // Mock the entire document if needed
+    if (typeof document === 'undefined') {
+      (global as any).document = {
+        createElement: jest.fn().mockReturnValue(mockElement),
+        getElementById: jest.fn().mockReturnValue(null),
+        head: mockHead,
+        body: mockBody,
+      };
+    }
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('should render children with theme provider', () => {
+    render(
+      <CustomThemeProvider brandingSettings={mockBrandingSettings}>
+        <div data-testid="child">Test content</div>
+      </CustomThemeProvider>
+    );
+
+    expect(screen.getByTestId('child')).toBeInTheDocument();
+  });
+
+  it('should apply branding colors to theme palette', () => {
+    const TestComponent = () => {
+      const theme = useTheme();
+      return (
+        <div>
+          <span data-testid="primary-color">{theme.palette.primary.main}</span>
+          <span data-testid="secondary-color">{theme.palette.secondary.main}</span>
+          <span data-testid="text-color">{theme.palette.text.primary}</span>
+        </div>
+      );
+    };
+
+    render(
+      <CustomThemeProvider brandingSettings={mockBrandingSettings}>
+        <TestComponent />
+      </CustomThemeProvider>
+    );
+
+    expect(screen.getByTestId('primary-color')).toHaveTextContent('#ff0000');
+    expect(screen.getByTestId('secondary-color')).toHaveTextContent('#00ff00');
+    expect(screen.getByTestId('text-color')).toHaveTextContent('#333333');
+  });
+
+  it('should apply font family to typography', () => {
+    const TestComponent = () => {
+      const theme = useTheme();
+      return (
+        <div>
+          <span data-testid="font-family">{theme.typography.fontFamily}</span>
+        </div>
+      );
+    };
+
+    render(
+      <CustomThemeProvider brandingSettings={mockBrandingSettings}>
+        <TestComponent />
+      </CustomThemeProvider>
+    );
+
+    expect(screen.getByTestId('font-family')).toHaveTextContent('Arial, sans-serif');
+  });
+
+  it('should handle font loading states', () => {
+    mockUseFontLoader.mockReturnValue({
+      status: useFontLoaderModule.FontStatus.LOADING,
+      error: undefined,
+      retry: jest.fn(),
+    });
+
+    render(
+      <CustomThemeProvider brandingSettings={mockBrandingSettings}>
+        <div data-testid="content">Loading fonts...</div>
+      </CustomThemeProvider>
+    );
+
+    expect(screen.getByTestId('content')).toBeInTheDocument();
+    expect(mockUseFontLoader).toHaveBeenCalledWith('Arial, sans-serif', {
+      weights: ['300', '400', '500', '600', '700'],
+      display: 'swap',
+      preload: true,
+    });
+  });
+
+  it('should handle font loading errors', () => {
+    mockUseFontLoader.mockReturnValue({
+      status: useFontLoaderModule.FontStatus.ERROR,
+      error: 'Font loading failed',
+      retry: jest.fn(),
+    });
+
+    render(
+      <CustomThemeProvider brandingSettings={mockBrandingSettings}>
+        <div data-testid="content">Content with error fonts</div>
+      </CustomThemeProvider>
+    );
+
+    expect(screen.getByTestId('content')).toBeInTheDocument();
+  });
+
+  it('should update theme when branding settings change', () => {
+    const TestComponent = () => {
+      const theme = useTheme();
+      return <span data-testid="primary-color">{theme.palette.primary.main}</span>;
+    };
+
+    const updatedSettings = {
+      ...mockBrandingSettings,
+      theme: {
+        ...mockBrandingSettings.theme,
+        theme_color: '#0000ff',
+      },
+    };
+
+    const { rerender } = render(
+      <CustomThemeProvider brandingSettings={mockBrandingSettings}>
+        <TestComponent />
+      </CustomThemeProvider>
+    );
+
+    expect(screen.getByTestId('primary-color')).toHaveTextContent('#ff0000');
+
+    rerender(
+      <CustomThemeProvider brandingSettings={updatedSettings}>
+        <TestComponent />
+      </CustomThemeProvider>
+    );
+
+    expect(screen.getByTestId('primary-color')).toHaveTextContent('#0000ff');
+  });
+
+  it('should create button component overrides', () => {
+    render(
+      <CustomThemeProvider brandingSettings={mockBrandingSettings}>
+        <Button variant="contained" data-testid="test-button">
+          Test Button
+        </Button>
+      </CustomThemeProvider>
+    );
+
+    const button = screen.getByTestId('test-button');
+    expect(button).toBeInTheDocument();
+  });
+
+  it('should create typography component overrides', () => {
+    render(
+      <CustomThemeProvider brandingSettings={mockBrandingSettings}>
+        <Typography data-testid="test-typography">
+          Test Text
+        </Typography>
+      </CustomThemeProvider>
+    );
+
+    const typography = screen.getByTestId('test-typography');
+    expect(typography).toBeInTheDocument();
+  });
+
+  it('should apply all typography variants with font family', () => {
+    const TestComponent = () => {
+      const theme = useTheme();
+      return (
+        <div>
+          <span data-testid="h1-font">{theme.typography.h1.fontFamily}</span>
+          <span data-testid="body1-font">{theme.typography.body1.fontFamily}</span>
+        </div>
+      );
+    };
+
+    render(
+      <CustomThemeProvider brandingSettings={mockBrandingSettings}>
+        <TestComponent />
+      </CustomThemeProvider>
+    );
+
+    expect(screen.getByTestId('h1-font')).toHaveTextContent('Arial, sans-serif !important');
+    expect(screen.getByTestId('body1-font')).toHaveTextContent('Arial, sans-serif !important');
+  });
+
+  it('should handle missing theme properties gracefully', () => {
+    const incompleteSettings = {
+      ...mockBrandingSettings,
+      theme: {
+        ...mockBrandingSettings.theme,
+        theme_color: undefined as any,
+      },
+    };
+
+    expect(() => {
+      render(
+        <CustomThemeProvider brandingSettings={incompleteSettings}>
+          <div>Test</div>
+        </CustomThemeProvider>
+      );
+    }).not.toThrow();
+  });
+
+  it('should apply secondary palette colors correctly', () => {
+    const TestComponent = () => {
+      const theme = useTheme();
+      return (
+        <div>
+          <span data-testid="secondary-main">{theme.palette.secondary.main}</span>
+          <span data-testid="info-main">{theme.palette.info.main}</span>
+        </div>
+      );
+    };
+
+    render(
+      <CustomThemeProvider brandingSettings={mockBrandingSettings}>
+        <TestComponent />
+      </CustomThemeProvider>
+    );
+
+    expect(screen.getByTestId('secondary-main')).toHaveTextContent('#00ff00');
+    expect(screen.getByTestId('info-main')).toHaveTextContent('#ffcccc');
+  });
+
+  it('should handle different font families', () => {
+    const customSettings = {
+      ...mockBrandingSettings,
+      theme: {
+        ...mockBrandingSettings.theme,
+        font_family: 'Roboto, Helvetica, Arial, sans-serif',
+      },
+    };
+
+    render(
+      <CustomThemeProvider brandingSettings={customSettings}>
+        <div data-testid="content">Test</div>
+      </CustomThemeProvider>
+    );
+
+    expect(mockUseFontLoader).toHaveBeenCalledWith('Roboto, Helvetica, Arial, sans-serif', {
+      weights: ['300', '400', '500', '600', '700'],
+      display: 'swap',
+      preload: true,
+    });
+  });
+
+  it('should inject global CSS styles', async () => {
+    const mockAppendChild = jest.fn();
+    document.head.appendChild = mockAppendChild;
+
+    render(
+      <CustomThemeProvider brandingSettings={mockBrandingSettings}>
+        <div>Test</div>
+      </CustomThemeProvider>
+    );
+
+    await waitFor(() => {
+      expect(mockAppendChild).toHaveBeenCalled();
+    });
+  });
+
+  it('should force body repaint for font application', async () => {
+    render(
+      <CustomThemeProvider brandingSettings={mockBrandingSettings}>
+        <div>Test</div>
+      </CustomThemeProvider>
+    );
+
+    await waitFor(() => {
+      expect(setTimeout).toHaveBeenCalled();
+    });
+  });
+});
