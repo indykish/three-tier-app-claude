@@ -7,6 +7,11 @@
 ### Example Usage
 
 ```hcl
+data "e2e_faas_runtime" "python" {
+  name    = "python3.11"
+  variant = "flask"  # flask, fastapi, http
+}
+
 # Core function resource
 resource "e2e_faas_function" "main" {
   name     = "process-orders"
@@ -102,5 +107,6 @@ output "available_runtimes" {
 
 1. **Phase 1** (MVP): Basic `e2e_faas_function` with inline code
 2. **Phase 2**: Add ZIP/directory upload support
-3. **Phase 3**: Add `e2e_faas_secret` resource
-4. **Phase 5**: Add advanced features (triggers, logs, metrics)
+3. **Phase 3**: Add `e2e_faas_runtimes` data source
+4. **Phase 3**: Add `e2e_faas_secret` resource
+5. **Phase 5**: Add advanced features (triggers, logs, metrics)
