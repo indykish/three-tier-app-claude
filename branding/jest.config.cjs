@@ -5,6 +5,13 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  globals: {
+    'import.meta': {
+      env: {
+        VITE_API_URL: 'http://localhost:3001',
+      },
+    },
+  },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',

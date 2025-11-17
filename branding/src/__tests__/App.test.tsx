@@ -4,6 +4,17 @@ import userEvent from '@testing-library/user-event';
 import App from '@/App';
 import { render, mockBrandingSettings } from './utils/test-utils';
 
+// Mock themeApi first to avoid import.meta.env issues
+jest.mock('@/services/themeApi', () => ({
+  ThemeAPI: {
+    getAll: jest.fn().mockResolvedValue([]),
+    getById: jest.fn().mockRejectedValue(new Error('Not found')),
+    create: jest.fn().mockResolvedValue({ id: 1 }),
+    update: jest.fn().mockResolvedValue({ id: 1 }),
+    delete: jest.fn().mockResolvedValue(undefined),
+  },
+}));
+
 // Mock the services first
 const mockLoad = jest.fn();
 const mockSave = jest.fn();
