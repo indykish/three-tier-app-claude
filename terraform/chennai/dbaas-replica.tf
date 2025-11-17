@@ -45,10 +45,10 @@ output "db_replica_connectivity" {
 output "db_connection_info" {
   description = "Database connection information"
   value = {
-    id              = e2e_dbaas_postgresql.replica.id
-    user            = var.db_user
-    database        = var.db_name
-    port            = 5432
+    id               = e2e_dbaas_postgresql.replica.id
+    user             = var.db_user
+    database         = var.db_name
+    port             = 5432
     delhi_primary_id = var.delhi_db_primary_id
   }
 }
