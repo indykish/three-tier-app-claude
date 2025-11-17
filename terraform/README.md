@@ -345,6 +345,7 @@ terraform/
 │   ├── variables.tf         # Region variables
 │   ├── network.tf           # VPC configuration
 │   ├── dbaas-primary.tf     # Primary PostgreSQL
+│   ├── pgpool-proxy.tf      # Database proxy (optional)
 │   ├── autoscaling-frontend.tf
 │   ├── autoscaling-backend.tf
 │   ├── lb-frontend.tf       # Frontend load balancer
@@ -357,12 +358,53 @@ terraform/
 │   ├── versions.tf          # Provider versions
 │   ├── providers.tf         # Provider config template
 │   └── variables.tf         # Global variables
+├── monitoring/               # Synthetic monitoring (optional)
+│   ├── uptimerobot.tf       # UptimeRobot monitors
+│   ├── variables.tf         # Monitor configuration
+│   └── README.md            # Setup instructions
+├── docs/                     # Enhanced documentation
+│   ├── ENHANCED_ARCHITECTURE.md  # Auto-failover design
+│   └── MONITORING_SETUP.md  # Monitoring guide
 ├── scripts/                  # Operational scripts
 │   ├── promote-chennai-db.sh
 │   ├── restore-delhi-primary.sh
-│   └── health-check.sh
+│   ├── health-check.sh
+│   └── failover-automation.py  # Webhook handler
 ├── terraform.tfvars.example  # Example variables
 └── README.md                 # This documentation
+```
+
+## Enhanced Architecture (Automatic Failover)
+
+The base configuration provides **semi-automatic** failover. For **fully automatic** failover, see:
+
+- **[docs/ENHANCED_ARCHITECTURE.md](docs/ENHANCED_ARCHITECTURE.md)** - PgPool-II + Patroni for automatic DB failover
+- **[docs/MONITORING_SETUP.md](docs/MONITORING_SETUP.md)** - UptimeRobot setup and automation webhooks
+- **[monitoring/](monitoring/)** - Terraform for UptimeRobot (free synthetic monitoring)
+
+### Key Enhancements Available:
+
+1. **Database Proxy (PgPool-II)**
+   - Backends connect to single endpoint (never changes)
+   - Automatic read/write splitting
+   - Connection pooling
+   - Auto-failover detection
+
+2. **Synthetic Monitoring (UptimeRobot)**
+   - Free tier: 50 monitors, 5-minute checks
+   - Webhook triggers for automation
+   - Status pages for customers
+   - Terraform provider available
+
+3. **Automation Scripts**
+   - `scripts/failover-automation.py` - Webhook handler for auto-promotion
+   - `scripts/promote-chennai-db.sh` - Manual promotion steps
+   - `scripts/restore-delhi-primary.sh` - Restore primary after recovery
+
+### Recommended Stack for Production:
+
+```
+Route 53 (DNS) + UptimeRobot (Monitoring) + PgPool-II (DB Proxy) + Webhook Automation
 ```
 
 ## Support
