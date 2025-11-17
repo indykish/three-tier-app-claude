@@ -1,28 +1,6 @@
 # Three-Tier Branding Application
 
-A complete three-tier application featuring a React frontend, Express.js backend API, and PostgreSQL database for managing branding themes. This repository includes both the application code and comprehensive Terraform configurations for deploying a **highly available multi-region infrastructure** on E2E Networks.
-
-## Table of Contents
-
-- [Architecture Overview](#architecture-overview)
-- [Prerequisites](#prerequisites)
-- [Quick Start (Local Development)](#quick-start-local-development)
-- [API Endpoints](#api-endpoints)
-- [Database Schema](#database-schema)
-- [Environment Variables](#environment-variables)
-- [Project Structure](#project-structure)
-- [Features](#features)
-- [Development](#development)
-- [Testing the Integration](#testing-the-integration)
-- [Troubleshooting](#troubleshooting)
-- [Production Deployment Guide](#production-deployment-guide)
-- [License](#license)
-
----
-
-## Architecture Overview
-
-### Local Development Architecture
+A complete three-tier application featuring a React frontend, Express.js backend API, and PostgreSQL database for managing branding themes.
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
@@ -32,55 +10,17 @@ A complete three-tier application featuring a React frontend, Express.js backend
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
-- **Frontend (Tier 1)**: React 19 + Material-UI branding wizard and dashboard
-- **Backend (Tier 2)**: Express.js REST API for theme CRUD operations
-- **Database (Tier 3)**: PostgreSQL with JSONB storage for theme data
-
-### Production Multi-Region Architecture
-
-For production deployments, this repository includes Terraform configurations for deploying across **Delhi and Chennai regions** with automatic failover:
-
-```
-                         ┌─────────────────────────────────┐
-                         │         Global DNS Layer        │
-                         │     (AWS Route 53 + Health)     │
-                         └─────────────┬───────────────────┘
-                                       │
-                          ┌────────────┴────────────┐
-                          │    Weighted Routing     │
-                          │   (50% Delhi/Chennai)   │
-                          └────────────┬────────────┘
-                                       │
-              ┌────────────────────────┴────────────────────────┐
-              ▼                                                 ▼
-    ┌─────────────────────┐                       ┌─────────────────────┐
-    │    DELHI REGION     │                       │   CHENNAI REGION    │
-    │   (Primary Write)   │                       │   (Read Replica)    │
-    └─────────────────────┘                       └─────────────────────┘
-```
-
-See [Production Deployment Guide](#production-deployment-guide) for full details.
-
----
+- **Frontend**: React 19 + Material-UI branding wizard and dashboard
+- **Backend**: Express.js REST API for theme CRUD operations
+- **Database**: PostgreSQL with JSONB storage for theme data
 
 ## Prerequisites
-
-### Local Development
 
 - Node.js 18+
 - PostgreSQL 13+
 - npm or yarn
 
-### Production Deployment
-
-- E2E Networks Account (API Key, Auth Token, Project ID)
-- Terraform >= 1.0.0
-- AWS Account (for Route 53)
-- UptimeRobot account (free tier)
-
----
-
-## Quick Start (Local Development)
+## Quick Start
 
 ### 1. Set Up Database
 
@@ -293,28 +233,6 @@ npm run build        # Production build
 npm test             # Run tests
 npm run test:coverage # Coverage report
 ```
-
----
-
-## Testing the Integration
-
-1. Start both backend and frontend
-2. Open http://localhost:5173
-3. The app should load themes from the API
-4. Use the branding wizard to create/modify themes
-5. Changes are persisted to the PostgreSQL database
-
-Check the browser console for API connection logs.
-
----
-
-## Troubleshooting
-
-**CORS Errors**: Ensure the backend is running on port 3001 and frontend on 5173
-
-**Database Connection**: Verify DATABASE_URL in backend/.env is correct
-
-**API Not Available**: The frontend will show a warning and fall back to localStorage
 
 ---
 
