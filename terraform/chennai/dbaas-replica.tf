@@ -1,7 +1,9 @@
-# Chennai Region - PostgreSQL Read Replica
+# Chennai Region - PostgreSQL Database
+# Note: Configure as replica of Delhi primary manually in E2E Console
+# or via API after creation
 
 resource "e2e_dbaas_postgresql" "replica" {
-  dbaas_name = "three-tier-replica-db"
+  name       = "three-tier-replica-db"
   location   = "Chennai"
   project_id = var.project_id
   plan       = var.db_plan
@@ -14,28 +16,20 @@ resource "e2e_dbaas_postgresql" "replica" {
   }
 
   # VPC attachment for network isolation
-  vpcs = [e2e_vpc.chennai_vpc.vpc_id]
+  vpc_list = [e2e_vpc.chennai_vpc.id]
 
   # Enable encryption at rest
   is_encryption_enabled = true
 
-  # Replica configuration
-  # This creates a read replica linked to the Delhi primary
-  replica_of = var.delhi_db_primary_id
+  # Note: Replication setup requires manual configuration
+  # After creation:
+  # 1. Configure as replica in E2E Console
+  # 2. Point to Delhi primary using delhi_db_primary_id variable
+  # 3. Start streaming replication
 
   lifecycle {
     prevent_destroy = true
   }
-}
-
-output "db_replica_public_ip" {
-  description = "Replica database public IP"
-  value       = e2e_dbaas_postgresql.replica.public_ip
-}
-
-output "db_replica_private_ip" {
-  description = "Replica database private IP"
-  value       = e2e_dbaas_postgresql.replica.private_ip
 }
 
 output "db_replica_id" {
@@ -43,14 +37,18 @@ output "db_replica_id" {
   value       = e2e_dbaas_postgresql.replica.id
 }
 
-output "db_read_connection_string" {
-  description = "Database connection string for replica (read operations)"
-  value       = "postgresql://${var.db_user}:${var.db_password}@${e2e_dbaas_postgresql.replica.private_ip}:5432/${var.db_name}"
-  sensitive   = true
+output "db_replica_connectivity" {
+  description = "Replica database connectivity details"
+  value       = e2e_dbaas_postgresql.replica.connectivity_detail
 }
 
-output "db_write_connection_string" {
-  description = "Database connection string for primary (write operations)"
-  value       = "postgresql://${var.db_user}:${var.db_password}@${var.delhi_db_primary_ip}:5432/${var.db_name}"
-  sensitive   = true
+output "db_connection_info" {
+  description = "Database connection information"
+  value = {
+    id              = e2e_dbaas_postgresql.replica.id
+    user            = var.db_user
+    database        = var.db_name
+    port            = 5432
+    delhi_primary_id = var.delhi_db_primary_id
+  }
 }

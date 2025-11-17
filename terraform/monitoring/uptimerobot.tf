@@ -17,7 +17,7 @@ provider "uptimerobot" {
 # Alert Contact - Webhook for automated failover
 resource "uptimerobot_alert_contact" "failover_webhook" {
   friendly_name = "Failover Automation Webhook"
-  type          = "web-hook"
+  type          = "webhook"
   value         = var.failover_webhook_url
 }
 
@@ -67,13 +67,6 @@ resource "uptimerobot_monitor" "delhi_frontend" {
     }
   }
 
-  # HTTP options
-  http_method     = "GET"
-  http_auth_type  = "none"
-  timeout         = 30
-
-  # Ignore SSL errors (if using HTTP)
-  ignore_ssl_errors = true
 }
 
 # Monitor: Chennai Frontend Load Balancer
@@ -104,11 +97,6 @@ resource "uptimerobot_monitor" "chennai_frontend" {
       recurrence = 0
     }
   }
-
-  http_method       = "GET"
-  http_auth_type    = "none"
-  timeout           = 30
-  ignore_ssl_errors = true
 }
 
 # Monitor: Delhi Backend API
@@ -124,11 +112,6 @@ resource "uptimerobot_monitor" "delhi_backend" {
     threshold  = 1
     recurrence = 0
   }
-
-  http_method       = "GET"
-  http_auth_type    = "none"
-  timeout           = 30
-  ignore_ssl_errors = true
 }
 
 # Monitor: Chennai Backend API
@@ -144,11 +127,6 @@ resource "uptimerobot_monitor" "chennai_backend" {
     threshold  = 1
     recurrence = 0
   }
-
-  http_method       = "GET"
-  http_auth_type    = "none"
-  timeout           = 30
-  ignore_ssl_errors = true
 }
 
 # Status Page (public status page for your app)

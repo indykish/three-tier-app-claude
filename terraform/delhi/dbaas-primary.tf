@@ -1,7 +1,7 @@
 # Delhi Region - Primary PostgreSQL Database
 
 resource "e2e_dbaas_postgresql" "primary" {
-  dbaas_name = "three-tier-primary-db"
+  name       = "three-tier-primary-db"
   location   = "Delhi"
   project_id = var.project_id
   plan       = var.db_plan
@@ -14,7 +14,7 @@ resource "e2e_dbaas_postgresql" "primary" {
   }
 
   # VPC attachment for network isolation
-  vpcs = [e2e_vpc.delhi_vpc.vpc_id]
+  vpc_list = [e2e_vpc.delhi_vpc.id]
 
   # Enable encryption at rest
   is_encryption_enabled = true
@@ -24,23 +24,22 @@ resource "e2e_dbaas_postgresql" "primary" {
   }
 }
 
-output "db_primary_public_ip" {
-  description = "Primary database public IP"
-  value       = e2e_dbaas_postgresql.primary.public_ip
-}
-
-output "db_primary_private_ip" {
-  description = "Primary database private IP"
-  value       = e2e_dbaas_postgresql.primary.private_ip
-}
-
 output "db_primary_id" {
   description = "Primary database instance ID"
   value       = e2e_dbaas_postgresql.primary.id
 }
 
-output "db_connection_string" {
-  description = "Database connection string for primary"
-  value       = "postgresql://${var.db_user}:${var.db_password}@${e2e_dbaas_postgresql.primary.private_ip}:5432/${var.db_name}"
-  sensitive   = true
+output "db_primary_connectivity" {
+  description = "Primary database connectivity details (contains IP information)"
+  value       = e2e_dbaas_postgresql.primary.connectivity_detail
+}
+
+output "db_connection_info" {
+  description = "Database connection information"
+  value = {
+    id       = e2e_dbaas_postgresql.primary.id
+    user     = var.db_user
+    database = var.db_name
+    port     = 5432
+  }
 }

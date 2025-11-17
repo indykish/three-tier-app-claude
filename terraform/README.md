@@ -254,7 +254,106 @@ vpc_cidr_delhi   = "10.10.0.0/16"
 vpc_cidr_chennai = "10.20.0.0/16"
 ```
 
-### Phase 2: Deploy Delhi Region (Primary)
+### Phase 2: Validate Terraform Configurations (Dry-Run)
+
+Before deploying any infrastructure, validate all Terraform configurations to catch syntax errors and provider schema mismatches:
+
+```bash
+# Validate Delhi configuration
+cd delhi
+terraform init
+terraform validate
+terraform fmt -check  # Check formatting consistency
+
+# Validate Chennai configuration
+cd ../chennai
+terraform init
+terraform validate
+terraform fmt -check
+
+# Validate Monitoring configuration (optional)
+cd ../monitoring
+terraform init
+terraform validate
+terraform fmt -check
+```
+
+**Expected Output:**
+```
+Success! The configuration is valid.
+```
+
+**Preview Changes (Plan):**
+```bash
+# See what will be created without actually deploying
+cd ../delhi
+terraform plan -var-file="../terraform.tfvars"
+
+# This shows:
+# - Resources to be created
+# - Resource dependencies
+# - Estimated execution time
+```
+
+This dry-run step is critical to catch issues like:
+- Invalid provider attributes
+- Missing required variables
+- Incorrect resource references
+- Type mismatches
+
+### Phase 3: Understanding the Setup Scripts
+
+The Terraform configuration uses `start_script` to automatically provision VMs on first boot. These scripts are located in `terraform/scripts/`:
+
+**`setup-frontend.sh`** - Frontend VM provisioning:
+```bash
+#!/bin/bash
+# Executed automatically when frontend VM boots
+# 1. Updates system packages
+# 2. Installs Node.js 18.x LTS
+# 3. Installs Caddy web server
+# 4. Clones the application repository
+# 5. Builds the React frontend
+# 6. Configures Caddy as reverse proxy
+# 7. Starts frontend service
+```
+
+**`setup-backend.sh`** - Backend VM provisioning:
+```bash
+#!/bin/bash
+# Executed automatically when backend VM boots
+# 1. Updates system packages
+# 2. Installs Node.js 18.x LTS
+# 3. Installs PM2 process manager
+# 4. Clones the application repository
+# 5. Installs backend dependencies
+# 6. Configures environment variables
+# 7. Starts Express API with PM2
+```
+
+**Customization Required:**
+
+Before deployment, modify these scripts to match your environment:
+
+```bash
+# Edit terraform/scripts/setup-frontend.sh
+- Update GIT_REPO to your repository URL
+- Configure API_URL to point to your backend load balancer
+- Adjust Caddy configuration for your domain
+
+# Edit terraform/scripts/setup-backend.sh
+- Update GIT_REPO to your repository URL
+- Set DATABASE_URL to use PgPool or direct connection
+- Configure environment-specific variables
+```
+
+**Important Notes:**
+- Scripts run as root during VM initialization
+- Logs are available in `/var/log/cloud-init-output.log`
+- Scripts must be idempotent (safe to run multiple times)
+- VM won't be "ready" until scripts complete successfully
+
+### Phase 4: Deploy Delhi Region (Primary)
 
 ```bash
 cd delhi
@@ -273,11 +372,12 @@ terraform apply -var-file="../terraform.tfvars"
 
 1. **VPC** (10.10.0.0/16) - Isolated network
 2. **PostgreSQL Primary** - Main database with encryption
-3. **PgPool-II VM** - Database proxy layer
-4. **Frontend Autoscaling Group** - Caddy + React (min 1, max 5)
-5. **Backend Autoscaling Group** - Express API (min 1, max 5)
-6. **Frontend Load Balancer** - External, public-facing
-7. **Backend Load Balancer** - Internal, for API routing
+3. **Frontend Node** - VM running Caddy + React (auto-provisioned via start_script)
+4. **Backend Node** - VM running Express API (auto-provisioned via start_script)
+5. **Frontend Load Balancer** - External, public-facing
+6. **Backend Load Balancer** - Internal, for API routing
+
+*Note: For production auto-scaling, consider using e2e_scaler_group with custom pre-built images.*
 
 **Save Critical Outputs:**
 
@@ -291,7 +391,7 @@ terraform output db_primary_private_ip    # For Chennai replica
 terraform output db_primary_id            # For Chennai replica setup
 ```
 
-### Phase 3: Deploy Chennai Region (Secondary)
+### Phase 5: Deploy Chennai Region (Secondary)
 
 ```bash
 cd ../chennai
@@ -312,13 +412,12 @@ terraform apply \
 **Chennai Components:**
 
 1. **VPC** (10.20.0.0/16) - Separate network
-2. **PostgreSQL Replica** - Streams from Delhi primary
-3. **PgPool-II VM** - Routes reads locally, writes to Delhi
-4. **Frontend Autoscaling Group** - Identical to Delhi
-5. **Backend Autoscaling Group** - Identical to Delhi
-6. **Load Balancers** - Regional entry points
+2. **PostgreSQL Replica** - Streams from Delhi primary (manual setup required)
+3. **Frontend Node** - VM running Caddy + React (auto-provisioned via start_script)
+4. **Backend Node** - VM running Express API (auto-provisioned via start_script)
+5. **Load Balancers** - Regional entry points
 
-### Phase 4: Configure DNS with Health Checks
+### Phase 6: Configure DNS with Health Checks
 
 **AWS Route 53 Setup:**
 

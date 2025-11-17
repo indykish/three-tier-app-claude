@@ -9,7 +9,7 @@ resource "e2e_vpc" "chennai_vpc" {
 
 output "vpc_id" {
   description = "Chennai VPC ID"
-  value       = e2e_vpc.chennai_vpc.vpc_id
+  value       = e2e_vpc.chennai_vpc.id
 }
 
 output "vpc_network_id" {

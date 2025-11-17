@@ -2,13 +2,14 @@
 
 resource "e2e_loadbalancer" "backend_lb" {
   lb_name    = "three-tier-backend-delhi"
-  plan_name  = "Starter"
+  location   = "Delhi"
+  plan_name  = "E2E-LB-2"
   project_id = var.project_id
   lb_mode    = "HTTP"
   lb_type    = "internal"
 
   # VPC attachment - internal LB for backend services
-  vpc_list = [e2e_vpc.delhi_vpc.vpc_id]
+  vpc_list = [e2e_vpc.delhi_vpc.id]
 
   # HTTP Backend configuration for API
   backends {
@@ -18,21 +19,17 @@ resource "e2e_loadbalancer" "backend_lb" {
     # Health check configuration
     checkbox_enable = true
     check_url       = "/health"
-    domain_name     = ""
 
-    # Servers from autoscaling group
-    dynamic "servers" {
-      for_each = e2e_autoscaling.backend.node_ids
-      content {
-        node_id = servers.value
-        port    = var.backend_port
-      }
+    # Backend servers
+    servers {
+      id   = e2e_node.backend.id
+      port = var.backend_port
     }
   }
 
   depends_on = [
     e2e_vpc.delhi_vpc,
-    e2e_autoscaling.backend
+    e2e_node.backend
   ]
 }
 
