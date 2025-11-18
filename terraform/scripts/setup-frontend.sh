@@ -24,14 +24,14 @@ cd /opt/app
 git clone https://github.com/indykish/three-tier-app-claude.git .
 
 # Build frontend
-cd /opt/app/branding
+cd /opt/app/frontend
 npm install
 npm run build
 
 # Configure Caddy
 cat > /etc/caddy/Caddyfile <<'CADDYFILE'
 :80 {
-    root * /opt/app/branding/dist
+    root * /opt/app/frontend/dist
     file_server
 
     # SPA routing
@@ -54,7 +54,7 @@ systemctl enable caddy
 systemctl restart caddy
 
 # Create health check endpoint
-mkdir -p /opt/app/branding/dist/health
-echo '{"status": "healthy", "service": "frontend", "region": "delhi"}' > /opt/app/branding/dist/health/index.html
+mkdir -p /opt/app/frontend/dist/health
+echo '{"status": "healthy", "service": "frontend", "region": "delhi"}' > /opt/app/frontend/dist/health/index.html
 
 echo "Frontend setup completed successfully"

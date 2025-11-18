@@ -19,7 +19,7 @@ vm_plan    = "C3.8GB"  # 4 vCPU, 8GB RAM, 100GB disk
 # Database Configuration
 db_plan     = "DBS.8GB"
 db_version  = "16"
-db_name     = "branding_db"
+db_name     = "appdb"
 db_user     = "dbadmin"
 db_password = "your-secure-database-password"  # TODO: Change this or use TF_VAR_db_password
 
