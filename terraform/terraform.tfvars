@@ -1,13 +1,13 @@
-# E2E Networks Authentication
-# IMPORTANT: Copy this file to terraform.tfvars and fill in your values
-# NEVER commit terraform.tfvars to version control
-
-# Required: E2E Networks API credentials
-e2e_api_key    = "your-api-key-here"
-e2e_auth_token = "your-auth-token-here"
-
-# Required: Your E2E Networks project ID
-project_id = "your-project-id"
+# Three-Tier App Terraform Variables
+#
+# IMPORTANT: E2E Networks credentials are pulled from environment variables.
+# Before running terraform, export these environment variables:
+#
+#   export TF_VAR_e2e_api_key="your-api-key-here"
+#   export TF_VAR_e2e_auth_token="your-auth-token-here"
+#   export TF_VAR_project_id="your-project-id"
+#
+# For persistent configuration, add these to your shell profile (~/.bashrc, ~/.zshrc)
 
 # SSH Key (must exist in your E2E Networks account)
 ssh_key_name = "KishoreMac"
@@ -21,7 +21,7 @@ db_plan     = "DBS.8GB"
 db_version  = "16"
 db_name     = "branding_db"
 db_user     = "dbadmin"
-db_password = "your-secure-database-password"
+db_password = "your-secure-database-password"  # TODO: Change this or use TF_VAR_db_password
 
 # Application Ports
 frontend_port = 80

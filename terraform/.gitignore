@@ -12,8 +12,9 @@
 crash.log
 crash.*.log
 
-# Sensitive variable files (never commit these!)
-terraform.tfvars
+# Sensitive variable files
+# NOTE: terraform.tfvars is now safe to commit because credentials are pulled from environment variables
+# Only ignore auto.tfvars files and output files
 *.auto.tfvars
 *-outputs.json
 

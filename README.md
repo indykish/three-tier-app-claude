@@ -272,41 +272,11 @@ This guide implements **Active/Active** architecture where:
 # Clone repository
 git clone https://github.com/indykish/three-tier-app-claude.git
 cd three-tier-app-claude/terraform
-
-# Copy example configuration
-cp terraform.tfvars.example terraform.tfvars
 ```
 
-Edit `terraform.tfvars`:
+**Configure credentials:** See [`terraform/terraform.tfvars`](terraform/terraform.tfvars) for instructions on setting up E2E Networks credentials via environment variables.
 
-```hcl
-# E2E Networks Authentication
-e2e_api_key    = "your-api-key-here"
-e2e_auth_token = "your-auth-token-here"
-project_id     = "your-project-id"
-
-# SSH Access
-ssh_key_name = "KishoreMac"
-
-# VM Configuration
-image_name = "Ubuntu-24.04"
-vm_plan    = "C3.8GB"
-
-# Database Configuration
-db_plan     = "DBS.8GB"
-db_version  = "16"
-db_name     = "branding_db"
-db_user     = "dbadmin"
-db_password = "YourSecureP@ssw0rd!"
-
-# Autoscaling
-autoscaling_min = 1
-autoscaling_max = 5
-
-# Network
-vpc_cidr_delhi   = "10.10.0.0/16"
-vpc_cidr_chennai = "10.20.0.0/16"
-```
+**Edit configuration values** in `terraform.tfvars` as needed (SSH key name, database password, etc.).
 
 ### Phase 2: Validate Terraform Configurations (Dry-Run)
 
