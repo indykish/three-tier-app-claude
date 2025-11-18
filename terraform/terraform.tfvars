@@ -3,23 +3,11 @@
 # IMPORTANT: E2E Networks credentials are pulled from environment variables.
 # Before running terraform, export these environment variables:
 #
-#   export TF_VAR_e2e_api_key="${E2E_API_KEY}"
-#   export TF_VAR_e2e_auth_token="${E2E_AUTH_TOKEN}"
-#   export TF_VAR_project_id="${E2E_PROJECT_ID}"
+#   export TF_VAR_e2e_api_key="your-api-key-here"
+#   export TF_VAR_e2e_auth_token="your-auth-token-here"
+#   export TF_VAR_project_id="your-project-id"
 #
-# Or add them to your shell profile (~/.bashrc, ~/.zshrc):
-#   export E2E_API_KEY="your-api-key-here"
-#   export E2E_AUTH_TOKEN="your-auth-token-here"
-#   export E2E_PROJECT_ID="your-project-id"
-#   export TF_VAR_e2e_api_key="${E2E_API_KEY}"
-#   export TF_VAR_e2e_auth_token="${E2E_AUTH_TOKEN}"
-#   export TF_VAR_project_id="${E2E_PROJECT_ID}"
-
-# NOTE: The following values are commented out because they come from environment variables
-# Uncomment and set if you prefer to use this file instead of environment variables
-# e2e_api_key    = "pulled-from-TF_VAR_e2e_api_key"
-# e2e_auth_token = "pulled-from-TF_VAR_e2e_auth_token"
-# project_id     = "pulled-from-TF_VAR_project_id"
+# For persistent configuration, add these to your shell profile (~/.bashrc, ~/.zshrc)
 
 # SSH Key (must exist in your E2E Networks account)
 ssh_key_name = "KishoreMac"
