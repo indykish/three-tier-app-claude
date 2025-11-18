@@ -1,4 +1,53 @@
-# Three-Tier Branding Application
+<div align="center">
+
+![E2E Networks](https://e2enetworks.com/assets/img/logo.png)
+
+# 🚀 Three-Tier Application on E2E Networks
+
+### **A Proof of Concept Demonstrating Modern Cloud Architecture**
+
+[![E2E Cloud Console](https://img.shields.io/badge/E2E-Cloud_Console-blue?style=for-the-badge)](https://myaccount.e2enetworks.com)
+[![Documentation](https://img.shields.io/badge/E2E-Documentation-green?style=for-the-badge)](https://docs.e2enetworks.com)
+[![Terraform Provider](https://img.shields.io/badge/Terraform-E2E_Provider-purple?style=for-the-badge)](https://registry.terraform.io/providers/e2eterraformprovider/e2e/latest)
+
+</div>
+
+---
+
+## 🎯 What Is This?
+
+Welcome to a **production-ready proof of concept** that showcases the power of building modern, highly-available applications on **E2E Networks Cloud**! This project demonstrates how to architect, deploy, and manage a complete **three-tier application stack** using infrastructure-as-code principles.
+
+### What You'll Experience:
+
+- **🎨 Frontend Tier** - A responsive React application with Material-UI, serving dynamic branding themes
+- **⚡ API Tier** - A robust Express.js REST API handling business logic and data operations
+- **🗄️ Database Tier** - PostgreSQL with JSONB storage, configured for high availability and replication
+- **🌍 Multi-Region Deployment** - Active/active architecture across Delhi and Chennai regions
+- **🔄 Automatic Failover** - Health-checked DNS routing with zero-downtime disaster recovery
+- **📦 Infrastructure as Code** - Complete Terraform configurations for reproducible deployments
+
+### Why E2E Networks?
+
+E2E Networks provides a powerful, cost-effective cloud platform purpose-built for the Indian market. This proof of concept leverages:
+
+- **💰 Competitive Pricing** - Up to 50% cost savings compared to global cloud providers
+- **🇮🇳 Strategic Data Centers** - Low-latency access from Delhi, Mumbai, Chennai, and Bangalore
+- **🛠️ Native Terraform Support** - Full IaC capabilities through the official E2E Terraform Provider
+- **🔐 Enterprise Features** - VPC isolation, managed databases, load balancing, and autoscaling
+- **⚡ High Performance** - NVMe SSD storage, high-frequency CPUs, and dedicated resources
+
+### 🚀 Get Started with E2E Networks
+
+New to E2E Networks? Get up and running in minutes:
+
+1. **[Create Your Account](https://myaccount.e2enetworks.com)** - Sign up for the E2E Networks cloud console
+2. **[Explore the Documentation](https://docs.e2enetworks.com)** - Comprehensive guides and API references
+3. **[Install Terraform Provider](https://registry.terraform.io/providers/e2eterraformprovider/e2e/latest)** - Infrastructure automation made easy
+
+---
+
+## 📋 Application Overview
 
 A complete three-tier application featuring a React frontend, Express.js backend API, and PostgreSQL database for managing branding themes.
 
