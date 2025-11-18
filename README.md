@@ -274,27 +274,9 @@ git clone https://github.com/indykish/three-tier-app-claude.git
 cd three-tier-app-claude/terraform
 ```
 
-The terraform configuration is designed to pull E2E Networks credentials from environment variables for security. Set these variables before running terraform:
+**Configure credentials:** See [`terraform/terraform.tfvars`](terraform/terraform.tfvars) for instructions on setting up E2E Networks credentials via environment variables.
 
-```bash
-# Export E2E Networks credentials
-export TF_VAR_e2e_api_key="your-api-key-here"
-export TF_VAR_e2e_auth_token="your-auth-token-here"
-export TF_VAR_project_id="your-project-id"
-```
-
-**For persistent configuration**, add these to your shell profile (`~/.bashrc` or `~/.zshrc`), then reload:
-
-```bash
-source ~/.bashrc  # or source ~/.zshrc
-```
-
-**Edit `terraform/terraform.tfvars`** for other configuration values. The file is already present with sensible defaults. Update as needed:
-
-```hcl
-ssh_key_name = "KishoreMac"  # Must exist in your E2E Networks account
-db_password = "YourSecureP@ssw0rd!"  # Choose a secure password
-```
+**Edit configuration values** in `terraform.tfvars` as needed (SSH key name, database password, etc.).
 
 ### Phase 2: Validate Terraform Configurations (Dry-Run)
 
