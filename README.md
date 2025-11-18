@@ -274,60 +274,27 @@ git clone https://github.com/indykish/three-tier-app-claude.git
 cd three-tier-app-claude/terraform
 ```
 
-**Set up E2E Networks credentials using environment variables:**
-
 The terraform configuration is designed to pull E2E Networks credentials from environment variables for security. Set these variables before running terraform:
 
 ```bash
-# Export E2E Networks credentials (if not already set)
-export E2E_API_KEY="your-api-key-here"
-export E2E_AUTH_TOKEN="your-auth-token-here"
-export E2E_PROJECT_ID="your-project-id"
-
-# Map to Terraform variables
-export TF_VAR_e2e_api_key="${E2E_API_KEY}"
-export TF_VAR_e2e_auth_token="${E2E_AUTH_TOKEN}"
-export TF_VAR_project_id="${E2E_PROJECT_ID}"
+# Export E2E Networks credentials
+export TF_VAR_e2e_api_key="your-api-key-here"
+export TF_VAR_e2e_auth_token="your-auth-token-here"
+export TF_VAR_project_id="your-project-id"
 ```
 
-**For persistent configuration**, add these to your shell profile (`~/.bashrc` or `~/.zshrc`):
+**For persistent configuration**, add these to your shell profile (`~/.bashrc` or `~/.zshrc`), then reload:
 
-```bash
-# E2E Networks Credentials
-export E2E_API_KEY="your-api-key-here"
-export E2E_AUTH_TOKEN="your-auth-token-here"
-export E2E_PROJECT_ID="your-project-id"
-
-# Terraform variable mappings
-export TF_VAR_e2e_api_key="${E2E_API_KEY}"
-export TF_VAR_e2e_auth_token="${E2E_AUTH_TOKEN}"
-export TF_VAR_project_id="${E2E_PROJECT_ID}"
-```
-
-Then reload your shell profile:
 ```bash
 source ~/.bashrc  # or source ~/.zshrc
 ```
 
-**Edit `terraform/terraform.tfvars`** for other configuration values:
-
-The `terraform.tfvars` file is already present with sensible defaults. Update the following values as needed:
+**Edit `terraform/terraform.tfvars`** for other configuration values. The file is already present with sensible defaults. Update as needed:
 
 ```hcl
-# SSH Access (must exist in your E2E Networks account)
-ssh_key_name = "KishoreMac"  # Update to your SSH key name
-
-# Database Configuration
-db_password = "YourSecureP@ssw0rd!"  # Update to a secure password
-
-# VM and Database plans (adjust based on your needs)
-vm_plan    = "C3.8GB"  # 4 vCPU, 8GB RAM, 100GB disk
-db_plan    = "DBS.8GB"
-
-# Other settings have sensible defaults and can be left as-is
+ssh_key_name = "KishoreMac"  # Must exist in your E2E Networks account
+db_password = "YourSecureP@ssw0rd!"  # Choose a secure password
 ```
-
-**Note:** Credentials are pulled from environment variables and should NEVER be committed to version control. The `terraform.tfvars` file can be safely committed as it doesn't contain sensitive credentials.
 
 ### Phase 2: Validate Terraform Configurations (Dry-Run)
 
