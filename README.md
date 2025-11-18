@@ -9,6 +9,7 @@
 [![E2E Cloud Console](https://img.shields.io/badge/E2E-Cloud_Console-blue?style=for-the-badge)](https://myaccount.e2enetworks.com)
 [![Documentation](https://img.shields.io/badge/E2E-Documentation-green?style=for-the-badge)](https://docs.e2enetworks.com)
 [![Terraform Provider](https://img.shields.io/badge/Terraform-E2E_Provider-purple?style=for-the-badge)](https://registry.terraform.io/providers/e2eterraformprovider/e2e/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 </div>
 
