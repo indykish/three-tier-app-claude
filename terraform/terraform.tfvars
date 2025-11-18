@@ -34,3 +34,6 @@ autoscaling_max = 5
 # Network Configuration
 vpc_cidr_delhi   = "10.10.0.0/16"
 vpc_cidr_chennai = "10.20.0.0/16"
+
+# Repository Configuration
+github_repo_url = "https://github.com/indykish/three-tier-app-claude.git"

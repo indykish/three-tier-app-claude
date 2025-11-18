@@ -100,3 +100,9 @@ variable "vpc_cidr_chennai" {
   type        = string
   default     = "10.20.0.0/16"
 }
+
+variable "github_repo_url" {
+  description = "GitHub repository URL for the application"
+  type        = string
+  default     = "https://github.com/indykish/three-tier-app-claude.git"
+}
