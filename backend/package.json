@@ -1,7 +1,7 @@
 {
   "name": "three-tier-backend",
   "version": "1.0.0",
-  "description": "Backend API for Three-Tier Branding Application",
+  "description": "Backend API for Three-Tier Application",
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",

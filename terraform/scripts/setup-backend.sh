@@ -25,7 +25,7 @@ npm run build
 # Note: Update DATABASE_URL with actual DB connection from Terraform outputs
 cat > /opt/app/backend/.env <<'ENVFILE'
 PORT=3001
-DATABASE_URL=postgresql://dbadmin:password@localhost:5432/branding_db
+DATABASE_URL=postgresql://dbadmin:password@localhost:5432/appdb
 NODE_ENV=production
 CORS_ORIGINS=*
 ENVFILE
