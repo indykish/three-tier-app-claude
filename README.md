@@ -272,41 +272,62 @@ This guide implements **Active/Active** architecture where:
 # Clone repository
 git clone https://github.com/indykish/three-tier-app-claude.git
 cd three-tier-app-claude/terraform
-
-# Copy example configuration
-cp terraform.tfvars.example terraform.tfvars
 ```
 
-Edit `terraform.tfvars`:
+**Set up E2E Networks credentials using environment variables:**
+
+The terraform configuration is designed to pull E2E Networks credentials from environment variables for security. Set these variables before running terraform:
+
+```bash
+# Export E2E Networks credentials (if not already set)
+export E2E_API_KEY="your-api-key-here"
+export E2E_AUTH_TOKEN="your-auth-token-here"
+export E2E_PROJECT_ID="your-project-id"
+
+# Map to Terraform variables
+export TF_VAR_e2e_api_key="${E2E_API_KEY}"
+export TF_VAR_e2e_auth_token="${E2E_AUTH_TOKEN}"
+export TF_VAR_project_id="${E2E_PROJECT_ID}"
+```
+
+**For persistent configuration**, add these to your shell profile (`~/.bashrc` or `~/.zshrc`):
+
+```bash
+# E2E Networks Credentials
+export E2E_API_KEY="your-api-key-here"
+export E2E_AUTH_TOKEN="your-auth-token-here"
+export E2E_PROJECT_ID="your-project-id"
+
+# Terraform variable mappings
+export TF_VAR_e2e_api_key="${E2E_API_KEY}"
+export TF_VAR_e2e_auth_token="${E2E_AUTH_TOKEN}"
+export TF_VAR_project_id="${E2E_PROJECT_ID}"
+```
+
+Then reload your shell profile:
+```bash
+source ~/.bashrc  # or source ~/.zshrc
+```
+
+**Edit `terraform/terraform.tfvars`** for other configuration values:
+
+The `terraform.tfvars` file is already present with sensible defaults. Update the following values as needed:
 
 ```hcl
-# E2E Networks Authentication
-e2e_api_key    = "your-api-key-here"
-e2e_auth_token = "your-auth-token-here"
-project_id     = "your-project-id"
-
-# SSH Access
-ssh_key_name = "KishoreMac"
-
-# VM Configuration
-image_name = "Ubuntu-24.04"
-vm_plan    = "C3.8GB"
+# SSH Access (must exist in your E2E Networks account)
+ssh_key_name = "KishoreMac"  # Update to your SSH key name
 
 # Database Configuration
-db_plan     = "DBS.8GB"
-db_version  = "16"
-db_name     = "branding_db"
-db_user     = "dbadmin"
-db_password = "YourSecureP@ssw0rd!"
+db_password = "YourSecureP@ssw0rd!"  # Update to a secure password
 
-# Autoscaling
-autoscaling_min = 1
-autoscaling_max = 5
+# VM and Database plans (adjust based on your needs)
+vm_plan    = "C3.8GB"  # 4 vCPU, 8GB RAM, 100GB disk
+db_plan    = "DBS.8GB"
 
-# Network
-vpc_cidr_delhi   = "10.10.0.0/16"
-vpc_cidr_chennai = "10.20.0.0/16"
+# Other settings have sensible defaults and can be left as-is
 ```
+
+**Note:** Credentials are pulled from environment variables and should NEVER be committed to version control. The `terraform.tfvars` file can be safely committed as it doesn't contain sensitive credentials.
 
 ### Phase 2: Validate Terraform Configurations (Dry-Run)
 
