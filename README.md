@@ -42,7 +42,7 @@ This project uses E2E Networks, a cloud platform with data centers across India 
 ## Table of Contents
 
 - [Application Overview](#application-overview)
-- [Production Deployment Guide](#production-deployment-guide) *(overview - see terraform/ directory for full guide)*
+- [Production Deployment Guide](#production-deployment-guide)
   - [Building a Highly Available Multi-Region Application](#building-a-highly-available-multi-region-application-on-e2e-networks)
   - [Executive Summary](#executive-summary)
   - [Why Multi-Region?](#why-multi-region)
@@ -690,10 +690,6 @@ terraform apply -var-file="../terraform.tfvars"
 
 ---
 
-*For additional details and troubleshooting, see the [terraform/README.md](terraform/README.md) in this repository.*
-
----
-
 # Local Development Setup
 
 This section covers setting up the application for local development on your machine.
@@ -917,10 +913,6 @@ three-tier-app-claude/
 - **Database-Ready**: JSONB storage for flexible theme data
 - **Multi-Region Deployment**: Terraform configs for active/active deployments
 - **Automatic Failover**: Health-checked DNS with instant traffic redirection
-
----
-
-*The rest of the production deployment steps (Phase 2-6), database high availability setup, monitoring configuration, operational procedures, cost analysis, and lessons learned continue in the terraform/ directory documentation.*
 
 ---
 
