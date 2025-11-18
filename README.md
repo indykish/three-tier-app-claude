@@ -42,7 +42,7 @@ This project uses E2E Networks, a cloud platform with data centers across India 
 ## Table of Contents
 
 - [Application Overview](#application-overview)
-- [Production Deployment Guide](#production-deployment-guide) *(overview - see terraform/ directory for full guide)*
+- [Production Deployment Guide](#production-deployment-guide)
   - [Building a Highly Available Multi-Region Application](#building-a-highly-available-multi-region-application-on-e2e-networks)
   - [Executive Summary](#executive-summary)
   - [Why Multi-Region?](#why-multi-region)
@@ -308,7 +308,385 @@ vpc_cidr_delhi   = "10.10.0.0/16"
 vpc_cidr_chennai = "10.20.0.0/16"
 ```
 
-*Continue reading the full deployment guide below...*
+### Phase 2: Validate Terraform Configurations (Dry-Run)
+
+Before deploying any infrastructure, validate all Terraform configurations to catch syntax errors and provider schema mismatches:
+
+```bash
+# Validate Delhi configuration
+cd delhi
+terraform init
+terraform validate
+terraform fmt -check  # Check formatting consistency
+
+# Validate Chennai configuration
+cd ../chennai
+terraform init
+terraform validate
+terraform fmt -check
+
+# Validate Monitoring configuration (optional)
+cd ../monitoring
+terraform init
+terraform validate
+terraform fmt -check
+```
+
+**Expected Output:**
+```
+Success! The configuration is valid.
+```
+
+**Preview Changes (Plan):**
+```bash
+# See what will be created without actually deploying
+cd ../delhi
+terraform plan -var-file="../terraform.tfvars"
+
+# This shows:
+# - Resources to be created
+# - Resource dependencies
+# - Estimated execution time
+```
+
+This dry-run step is critical to catch issues like:
+- Invalid provider attributes
+- Missing required variables
+- Incorrect resource references
+- Type mismatches
+
+### Phase 3: Understanding the Setup Scripts
+
+The Terraform configuration uses `start_script` to automatically provision VMs on first boot. These scripts are located in `terraform/scripts/`:
+
+**`setup-frontend.sh`** - Frontend VM provisioning:
+```bash
+#!/bin/bash
+# Executed automatically when frontend VM boots
+# 1. Updates system packages
+# 2. Installs Node.js 18.x LTS
+# 3. Installs Caddy web server
+# 4. Clones the application repository
+# 5. Builds the React frontend
+# 6. Configures Caddy as reverse proxy
+# 7. Starts frontend service
+```
+
+**`setup-backend.sh`** - Backend VM provisioning:
+```bash
+#!/bin/bash
+# Executed automatically when backend VM boots
+# 1. Updates system packages
+# 2. Installs Node.js 18.x LTS
+# 3. Installs PM2 process manager
+# 4. Clones the application repository
+# 5. Installs backend dependencies
+# 6. Configures environment variables
+# 7. Starts Express API with PM2
+```
+
+**Customization Required:**
+
+Before deployment, modify these scripts to match your environment:
+
+```bash
+# Edit terraform/scripts/setup-frontend.sh
+- Update GIT_REPO to your repository URL
+- Configure API_URL to point to your backend load balancer
+- Adjust Caddy configuration for your domain
+
+# Edit terraform/scripts/setup-backend.sh
+- Update GIT_REPO to your repository URL
+- Set DATABASE_URL to use PgPool or direct connection
+- Configure environment-specific variables
+```
+
+**Important Notes:**
+- Scripts run as root during VM initialization
+- Logs are available in `/var/log/cloud-init-output.log`
+- Scripts must be idempotent (safe to run multiple times)
+- VM won't be "ready" until scripts complete successfully
+
+### Phase 4: Deploy Delhi Region (Primary)
+
+```bash
+cd delhi
+
+# Initialize Terraform - downloads provider plugins
+terraform init
+
+# Preview infrastructure changes
+terraform plan -var-file="../terraform.tfvars"
+
+# Deploy infrastructure (takes 10-15 minutes)
+terraform apply -var-file="../terraform.tfvars"
+```
+
+**What Gets Created:**
+
+1. **VPC** (10.10.0.0/16) - Isolated network
+2. **PostgreSQL Primary** - Main database with encryption
+3. **Frontend Node** - VM running Caddy + React (auto-provisioned via start_script)
+4. **Backend Node** - VM running Express API (auto-provisioned via start_script)
+5. **Frontend Load Balancer** - External, public-facing
+6. **Backend Load Balancer** - Internal, for API routing
+
+*Note: For production auto-scaling, consider using e2e_scaler_group with custom pre-built images.*
+
+**Save Critical Outputs:**
+
+```bash
+# Capture outputs for Chennai deployment
+terraform output -json > ../delhi-outputs.json
+
+# Key values to note:
+terraform output frontend_lb_public_ip    # Your Delhi endpoint
+terraform output db_primary_private_ip    # For Chennai replica
+terraform output db_primary_id            # For Chennai replica setup
+```
+
+### Phase 5: Deploy Chennai Region (Secondary)
+
+```bash
+cd ../chennai
+
+terraform init
+
+# Get Delhi database information
+DELHI_DB_IP=$(cd ../delhi && terraform output -raw db_primary_private_ip)
+DELHI_DB_ID=$(cd ../delhi && terraform output -raw db_primary_id)
+
+# Deploy with Delhi connection info
+terraform apply \
+  -var-file="../terraform.tfvars" \
+  -var="delhi_db_primary_ip=${DELHI_DB_IP}" \
+  -var="delhi_db_primary_id=${DELHI_DB_ID}"
+```
+
+**Chennai Components:**
+
+1. **VPC** (10.20.0.0/16) - Separate network
+2. **PostgreSQL Replica** - Streams from Delhi primary (manual setup required)
+3. **Frontend Node** - VM running Caddy + React (auto-provisioned via start_script)
+4. **Backend Node** - VM running Express API (auto-provisioned via start_script)
+5. **Load Balancers** - Regional entry points
+
+### Phase 6: Configure DNS with Health Checks
+
+**AWS Route 53 Setup:**
+
+1. **Create Health Check - Delhi**
+   ```
+   Health Check Name: three-tier-delhi-health
+   Protocol: HTTP
+   IP Address: <Delhi Frontend LB IP>
+   Port: 80
+   Path: /health/
+   Request Interval: 30 seconds
+   Failure Threshold: 3
+   ```
+
+2. **Create Health Check - Chennai**
+   ```
+   Health Check Name: three-tier-chennai-health
+   Protocol: HTTP
+   IP Address: <Chennai Frontend LB IP>
+   Port: 80
+   Path: /health/
+   Request Interval: 30 seconds
+   Failure Threshold: 3
+   ```
+
+3. **Create Weighted A Records**
+   ```
+   Record Name: app.yourdomain.com
+   Type: A
+
+   Record 1:
+   - Value: <Delhi Frontend LB IP>
+   - Weight: 50
+   - Health Check: three-tier-delhi-health
+   - Set ID: delhi-primary
+
+   Record 2:
+   - Value: <Chennai Frontend LB IP>
+   - Weight: 50
+   - Health Check: three-tier-chennai-health
+   - Set ID: chennai-secondary
+   ```
+
+**Behavior:**
+- Normal: Traffic split 50/50 between regions
+- Delhi fails: 100% traffic to Chennai (automatic)
+- Chennai fails: 100% traffic to Delhi (automatic)
+- Both fail: Service unavailable (needs investigation)
+
+### Phase 7: Conducting Failover Drills
+
+**Testing Automatic Failover:**
+
+```bash
+# 1. Verify both regions are healthy
+curl http://app.yourdomain.com/health/
+# Should alternate between Delhi and Chennai
+
+# 2. Check Route 53 health check status
+# Both should show "Healthy" in AWS Console
+
+# 3. Simulate Delhi region failure
+# Option A: Stop Delhi frontend LB in E2E Console
+# Option B: Block traffic to health endpoint temporarily
+# Option C: SSH to Delhi VMs and stop services:
+ssh root@<delhi-frontend-vm-ip>
+systemctl stop caddy
+
+# 4. Monitor health check transition
+# Route 53 → Health checks → three-tier-delhi-health
+# Wait ~1.5-3 minutes (3 checks × 30 seconds)
+# Status should change from "Healthy" → "Unhealthy"
+
+# 5. Test application still responds
+curl http://app.yourdomain.com/health/
+# Should now ONLY return Chennai responses
+
+# 6. Verify DNS routing
+dig app.yourdomain.com
+# Should return only Chennai IP
+
+# 7. Monitor application metrics
+# - Check error rates
+# - Verify latency
+# - Confirm all traffic to Chennai
+
+# 8. Restore Delhi
+ssh root@<delhi-frontend-vm-ip>
+systemctl start caddy
+
+# 9. Verify Delhi becomes healthy again
+# Route 53 health check should recover
+# Traffic should resume 50/50 distribution
+
+# 10. Document results
+# - Time to detect failure
+# - Time to reroute traffic
+# - Any errors during failover
+# - Total downtime experienced
+```
+
+**Database Failover Drill:**
+
+```bash
+# 1. Verify database replication status
+psql -h <chennai-db-ip> -U dbadmin -d branding_db -c "
+  SELECT now() - pg_last_xact_replay_timestamp() AS lag;"
+# Lag should be < 1 second
+
+# 2. Simulate Delhi database failure
+# (In E2E Console: Stop Delhi database instance)
+
+# 3. Promote Chennai replica to primary
+cd terraform/scripts
+./promote-chennai-db.sh
+
+# 4. Verify Chennai is now accepting writes
+psql -h <chennai-db-ip> -U dbadmin -d branding_db -c "
+  SELECT pg_is_in_recovery();"
+# Should return 'f' (false) indicating it's now primary
+
+# 5. Update backend configuration (if needed)
+# If using direct DB connections instead of PgPool
+ssh root@<backend-vm-ip>
+# Update DATABASE_URL to Chennai DB
+pm2 restart all
+
+# 6. Test write operations
+curl -X POST http://app.yourdomain.com/api/v1/themes \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Test Theme", ...}'
+
+# 7. Restore Delhi as replica
+./restore-delhi-primary.sh
+
+# 8. Document recovery time objective (RTO) and recovery point objective (RPO)
+```
+
+**Full Disaster Recovery Drill:**
+
+```bash
+# Scenario: Entire Delhi region is lost
+# Timeline: Document each step
+
+# T+0:00 - Delhi region fails
+# [Simulate by destroying Delhi infrastructure]
+
+# T+0:30 - First health check fails
+
+# T+1:30 - Route 53 marks Delhi unhealthy (after 3 failures)
+# T+1:30 - Traffic automatically routes to Chennai
+
+# T+5:00 - UptimeRobot detects failure, sends webhook
+
+# T+5:01 - Automated promotion of Chennai database
+./promote-chennai-db.sh
+
+# T+5:15 - Chennai DB fully promoted
+
+# T+10:00 - Rebuild Delhi infrastructure
+cd terraform/delhi
+terraform destroy  # Clean up failed resources
+terraform apply -var-file="../terraform.tfvars"
+
+# T+25:00 - Delhi infrastructure online
+# T+25:00 - Configure Delhi DB as replica of Chennai
+
+# T+30:00 - Delhi catches up with replication
+
+# T+30:00 - Re-enable Delhi in Route 53
+# T+30:00 - Traffic resumes 50/50 distribution
+
+# T+35:00 - Optionally promote Delhi back to primary
+# (After verifying stability)
+
+# Total recovery time: ~30-35 minutes
+# Data loss: 0 (assuming replication was up to date)
+```
+
+**Monitoring During Drills:**
+
+- **Application Metrics:**
+  - Error rate (should spike briefly, then normalize)
+  - Request latency (may increase temporarily)
+  - Throughput (should remain steady)
+
+- **Database Metrics:**
+  - Replication lag (before failure)
+  - Promotion time
+  - Write performance after promotion
+
+- **Infrastructure Metrics:**
+  - Health check status transitions
+  - DNS query responses
+  - Load balancer active connections
+
+**Post-Drill Review:**
+
+1. **What worked well?**
+   - Which automation worked as expected?
+   - What manual steps were smooth?
+
+2. **What needs improvement?**
+   - Unexpected errors or delays
+   - Missing automation
+   - Documentation gaps
+
+3. **Update runbooks:**
+   - Document actual timings vs. expected
+   - Add any missing steps discovered
+   - Update emergency contact procedures
+
+4. **Schedule next drill:**
+   - Recommended: Quarterly drills
+   - Vary scenarios each time
 
 ---
 
@@ -535,10 +913,6 @@ three-tier-app-claude/
 - **Database-Ready**: JSONB storage for flexible theme data
 - **Multi-Region Deployment**: Terraform configs for active/active deployments
 - **Automatic Failover**: Health-checked DNS with instant traffic redirection
-
----
-
-*The rest of the production deployment steps (Phase 2-6), database high availability setup, monitoring configuration, operational procedures, cost analysis, and lessons learned continue in the terraform/ directory documentation.*
 
 ---
 
