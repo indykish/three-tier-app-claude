@@ -1,4 +1,5 @@
 # UptimeRobot Monitoring Variables
+# These values are automatically pulled from Delhi and Chennai outputs
 
 variable "uptimerobot_api_key" {
   description = "UptimeRobot API key (from My Settings -> API Settings)"
@@ -7,28 +8,19 @@ variable "uptimerobot_api_key" {
 }
 
 variable "delhi_frontend_lb_ip" {
-  description = "Delhi frontend load balancer public IP"
+  description = "Delhi frontend load balancer public IP (from Delhi output)"
   type        = string
 }
 
 variable "chennai_frontend_lb_ip" {
-  description = "Chennai frontend load balancer public IP"
-  type        = string
-}
-
-variable "delhi_backend_lb_ip" {
-  description = "Delhi backend load balancer public IP"
-  type        = string
-}
-
-variable "chennai_backend_lb_ip" {
-  description = "Chennai backend load balancer public IP"
+  description = "Chennai frontend load balancer public IP (from Chennai output)"
   type        = string
 }
 
 variable "failover_webhook_url" {
   description = "Webhook URL for automated failover (e.g., AWS Lambda, Cloud Function)"
   type        = string
+  default     = "https://example.com/webhook"  # Replace with your actual webhook
 }
 
 variable "slack_webhook_url" {
@@ -37,7 +29,5 @@ variable "slack_webhook_url" {
   default     = ""
 }
 
-variable "ops_email" {
-  description = "Operations team email for alerts"
-  type        = string
-}
+# Note: Backend LBs are internal and cannot be monitored by UptimeRobot
+# Note: Email alerts are configured manually in UptimeRobot web interface

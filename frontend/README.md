@@ -250,6 +250,98 @@ class BrandingAPIService {
 
 chitecture
 
+---
+
+## API Reference
+
+### Themes API
+
+**Base URL (Local):** `http://localhost:3001/api/v1`
+**Base URL (Production):** `http://your-domain.com/api/v1`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/themes` | Get all themes |
+| GET | `/themes/:id` | Get theme by ID |
+| POST | `/themes` | Create new theme |
+| PUT | `/themes/:id` | Update theme |
+| DELETE | `/themes/:id` | Delete theme |
+
+### Example Theme Object
+
+```json
+{
+  "id": 1,
+  "name": "Default Theme",
+  "companyName": "Demo Company",
+  "companyUrl": "https://demo.example.com",
+  "theme": {
+    "theme_color": "#1976d2",
+    "primary_dark_color": "#1565c0",
+    "extra_light_color": "#bbdefb",
+    "text_color": "#000000",
+    "font_family": "Roboto, Arial, sans-serif",
+    "button": {
+      "primary_color": "#1976d2",
+      "secondary_color": "#9c27b0",
+      "hover_color": "#1565c0",
+      "border_color": "#cccccc"
+    },
+    "logos": {
+      "light": "https://example.com/logo-light.png",
+      "dark": "https://example.com/logo-dark.png",
+      "favicon": "https://example.com/favicon.ico"
+    }
+  },
+  "capabilities": {
+    "general_app_title": "My Bank"
+  }
+}
+```
+
+### Create Theme Example
+
+```bash
+curl -X POST http://localhost:3001/api/v1/themes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Custom Theme",
+    "companyName": "My Company",
+    "companyUrl": "https://mycompany.com",
+    "theme": {
+      "theme_color": "#2196f3",
+      "primary_dark_color": "#1976d2",
+      "extra_light_color": "#bbdefb",
+      "text_color": "#212121",
+      "font_family": "Inter, sans-serif",
+      "button": {
+        "primary_color": "#2196f3",
+        "secondary_color": "#ff5722",
+        "hover_color": "#1976d2",
+        "border_color": "#e0e0e0"
+      },
+      "logos": {}
+    },
+    "capabilities": {
+      "general_app_title": "My Application"
+    }
+  }'
+```
+
+### Database Schema
+
+```sql
+CREATE TABLE themes (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  json_data JSONB NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
 ## 🚀 Next Steps
 
 1. **Improve Service Layer Tests** - Increase `brandingStorage.ts` coverage from 16.12%

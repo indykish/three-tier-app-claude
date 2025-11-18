@@ -1,21 +1,19 @@
 # This file is maintained automatically by "terraform init".
 # Manual edits may be lost in future updates.
 
-provider "registry.terraform.io/louy/uptimerobot" {
-  version     = "0.5.1"
-  constraints = "~> 0.5"
+provider "registry.terraform.io/uptimerobot/uptimerobot" {
+  version     = "1.3.0"
+  constraints = "~> 1.3.0"
   hashes = [
-    "h1:Oc5L04pt+5NJ8n47K7tVHbqFmuobW/x5zaF5sPGCQwE=",
-    "zh:0cab4092125cf524a2e5caf74a4e90f230734b20bbceb20e51ffb82f2fcc90fc",
-    "zh:130d9d9ddb2f9070d7846066d424d785a624472a25b413382bf6e80ad4754158",
-    "zh:29c1ff142ec76adb751cf1e99b2c7bd9ba5f17b97bfcce5954043db9c4a83039",
-    "zh:2ade3d4b911bcceb795b009105dfd58c40d27d06c2ea7402159a76559e86dd25",
-    "zh:474d83e659597ee143d09100787bb35daf05dc2a0b3fbfcb8159792143b8c598",
-    "zh:62694db2f947bafb00532a5b961067eb488005061e684eb74148bcbf80805270",
-    "zh:6a4e423519a331328764ba0790eb79c63882e77aa8ffdf811a319b5efaf7034e",
-    "zh:7e7f7c16f54690f84fcb6d1a90848bd51fc7b2eb2cc23bfa0583e18a80157393",
-    "zh:a4a63a32ac0bbe0d11fda36768c824698db4c2378cbfdf5522276fe996621864",
-    "zh:af3062664c5c4ec012af48dea769318dcb8ef77cbb59f15d8b6c252fb9adda85",
-    "zh:de555bac4bd86d17e7b5592ec22a6db8d1496470d3dab4fa286a86e44bdad991",
+    "h1:J5Lexac0V3Cv2R3ViQldqsOU29DY4ucACZOpVVWdWkw=",
+    "zh:0db3f0b5e49d1cc9f50c5978f914dc0392060c59059486bc4d43d1e8debef996",
+    "zh:1e182a8bcaeb9e32c0ee556fd3e97ac5deb9d871e54b9ea59aeaeff3ec841b58",
+    "zh:55e56600126dea27a902050a2a7cce3265a7d687946fa309584d8b7513545462",
+    "zh:567dd3ddc8942abd6dfbf8e487609f3dbc47f662ebdf276fb23376b1682719e0",
+    "zh:890df766e9b839623b1f0437355032a3c006226a6c200cd911e15ee1a9014e9f",
+    "zh:9745e38e5bd6184612f8d5cb80a6f1add419aba51f7aa89ea5d1049778af2328",
+    "zh:a2c9bde089971f08ce302a1eef92c63ba4c60e37c9967b52de715f6fff8c59a0",
+    "zh:b5dfee50ae64f825f4a0617787b27c1786eaeda821ef42e25751658116da4f7e",
+    "zh:d2c838f9252ee869fb0ecc8adcd4da3da069c3210bb6be78fddd68587260ade5",
   ]
 }
