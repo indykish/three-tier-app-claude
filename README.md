@@ -351,7 +351,7 @@ This dry-run step is critical to catch issues like:
 
 ### Phase 3: Setup Scripts
 
-Terraform auto-provisions VMs using setup scripts in `terraform/scripts/` (`setup-frontend.sh` and `setup-backend.sh`). These install dependencies (Node.js, Caddy, PM2), clone your repository, build the application, and start services. Before deploying, update the `GIT_REPO`, `API_URL`, and `DATABASE_URL` variables in these scripts to match your environment. VM initialization logs are available at `/var/log/cloud-init-output.log`.
+Terraform auto-provisions VMs using `terraform/scripts/setup-frontend.sh` and `setup-backend.sh`. Configuration values from `terraform.tfvars` are automatically injected into these scripts via Terraform's `templatefile()` function - no manual editing required. Scripts install dependencies, clone your repository, build the application, and start services. VM initialization logs: `/var/log/cloud-init-output.log`.
 
 ### Phase 4: Deploy Delhi Region (Primary)
 

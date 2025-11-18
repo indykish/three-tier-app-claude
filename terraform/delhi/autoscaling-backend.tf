@@ -11,8 +11,15 @@ resource "e2e_node" "backend" {
   vpc_id     = e2e_vpc.delhi_vpc.id
   ssh_keys   = [var.ssh_key_name]
 
-  # VM provisioning script
-  start_script = file("${path.module}/../scripts/setup-backend.sh")
+  # VM provisioning script - variables injected from terraform.tfvars
+  start_script = templatefile("${path.module}/../scripts/setup-backend.sh", {
+    backend_port    = var.backend_port
+    db_user         = var.db_user
+    db_password     = var.db_password
+    db_name         = var.db_name
+    db_host         = e2e_dbaas_postgresql.primary.private_ip_address
+    github_repo_url = var.github_repo_url
+  })
 
   depends_on = [
     e2e_vpc.delhi_vpc,
