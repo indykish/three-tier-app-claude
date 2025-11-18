@@ -1,16 +1,22 @@
 # Global Terraform Configuration
 
-This directory contains shared Terraform configurations for the Active/Active deployment.
+This directory contains **reference documentation** for shared Terraform configurations. It is NOT used directly in deployments.
 
 ## Files
 
-- **versions.tf**: Terraform and provider version constraints
+- **versions.tf**: Terraform and provider version constraints reference
 - **providers.tf**: E2E Networks provider configuration template
-- **variables.tf**: Global variable definitions
+- **variables.tf**: Variable type definitions and documentation (reference only)
 
 ## Usage
 
-These files serve as templates and reference. Each regional deployment (Delhi/Chennai) has its own provider configuration to allow independent state management.
+**IMPORTANT:** This directory is for **reference only**. Regional deployments use:
+
+1. **Variable Declarations**: Each region (Delhi/Chennai) has its own `variables.tf`
+2. **Variable Values**: Single source in `terraform/terraform.tfvars` (parent directory)
+3. **Deployment**: `cd delhi && terraform apply -var-file="../terraform.tfvars"`
+
+These files serve as documentation showing all available variables. Each regional deployment (Delhi/Chennai) has its own provider configuration to allow independent state management.
 
 ## Provider Configuration
 
