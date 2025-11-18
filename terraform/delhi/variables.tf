@@ -81,6 +81,7 @@ variable "autoscaling_max" {
 variable "vpc_cidr" {
   description = "VPC CIDR block"
   type        = string
+  default     = "10.10.0.0/16"
 }
 
 variable "github_repo_url" {

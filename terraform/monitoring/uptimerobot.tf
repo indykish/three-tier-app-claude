@@ -4,8 +4,8 @@
 terraform {
   required_providers {
     uptimerobot = {
-      source  = "louy/uptimerobot"
-      version = "~> 0.5"
+      source  = "uptimerobot/uptimerobot"
+      version = "~> 1.3.0"
     }
   }
 }
@@ -14,126 +14,89 @@ provider "uptimerobot" {
   api_key = var.uptimerobot_api_key
 }
 
-# Alert Contact - Webhook for automated failover
-resource "uptimerobot_alert_contact" "failover_webhook" {
-  friendly_name = "Failover Automation Webhook"
-  type          = "webhook"
-  value         = var.failover_webhook_url
+# Integration - Webhook for automated failover
+resource "uptimerobot_integration" "failover_webhook" {
+  name                     = "Failover Automation Webhook"
+  type                     = "webhook"
+  value                    = var.failover_webhook_url
+  enable_notifications_for = 2 # Down events only
+  ssl_expiration_reminder  = false
 }
 
-# Alert Contact - Slack (optional)
-resource "uptimerobot_alert_contact" "slack" {
-  count         = var.slack_webhook_url != "" ? 1 : 0
-  friendly_name = "Ops Team Slack"
-  type          = "slack"
-  value         = var.slack_webhook_url
+# Integration - Slack (optional)
+resource "uptimerobot_integration" "slack" {
+  count                    = var.slack_webhook_url != "" ? 1 : 0
+  name                     = "Ops Team Slack"
+  type                     = "slack"
+  value                    = var.slack_webhook_url
+  enable_notifications_for = 1 # All events
+  ssl_expiration_reminder  = true
 }
 
-# Alert Contact - Email
-resource "uptimerobot_alert_contact" "email" {
-  friendly_name = "Ops Team Email"
-  type          = "email"
-  value         = var.ops_email
-}
+# Note: Email notifications are configured directly in UptimeRobot web interface
+# The Terraform provider doesn't support email type integrations
+# Configure email alerts manually at: Settings > Alert Contacts
 
 # Monitor: Delhi Frontend Load Balancer
 resource "uptimerobot_monitor" "delhi_frontend" {
-  friendly_name = "Three-Tier Delhi Frontend LB"
-  type          = "http"
-  url           = "http://${var.delhi_frontend_lb_ip}/health/"
-
-  # Check every 5 minutes (free tier)
+  name     = "Three-Tier Delhi Frontend LB"
+  type     = "HTTP"
+  url      = "http://${var.delhi_frontend_lb_ip}/health/"
   interval = 300
 
-  # Alert after 3 failed checks
-  alert_contact {
-    id         = uptimerobot_alert_contact.failover_webhook.id
-    threshold  = 3
-    recurrence = 0
-  }
-
-  alert_contact {
-    id         = uptimerobot_alert_contact.email.id
-    threshold  = 1
-    recurrence = 0
-  }
-
-  dynamic "alert_contact" {
-    for_each = var.slack_webhook_url != "" ? [1] : []
-    content {
-      id         = uptimerobot_alert_contact.slack[0].id
-      threshold  = 1
-      recurrence = 0
-    }
-  }
-
+  # Alert contacts with threshold settings
+  assigned_alert_contacts = concat(
+    [
+      {
+        alert_contact_id = uptimerobot_integration.failover_webhook.id
+        threshold        = 3
+        recurrence       = 0
+      }
+    ],
+    var.slack_webhook_url != "" ? [
+      {
+        alert_contact_id = uptimerobot_integration.slack[0].id
+        threshold        = 1
+        recurrence       = 0
+      }
+    ] : []
+  )
 }
 
 # Monitor: Chennai Frontend Load Balancer
 resource "uptimerobot_monitor" "chennai_frontend" {
-  friendly_name = "Three-Tier Chennai Frontend LB"
-  type          = "http"
-  url           = "http://${var.chennai_frontend_lb_ip}/health/"
-
+  name     = "Three-Tier Chennai Frontend LB"
+  type     = "HTTP"
+  url      = "http://${var.chennai_frontend_lb_ip}/health/"
   interval = 300
 
-  alert_contact {
-    id         = uptimerobot_alert_contact.failover_webhook.id
-    threshold  = 3
-    recurrence = 0
-  }
-
-  alert_contact {
-    id         = uptimerobot_alert_contact.email.id
-    threshold  = 1
-    recurrence = 0
-  }
-
-  dynamic "alert_contact" {
-    for_each = var.slack_webhook_url != "" ? [1] : []
-    content {
-      id         = uptimerobot_alert_contact.slack[0].id
-      threshold  = 1
-      recurrence = 0
-    }
-  }
+  # Alert contacts with threshold settings
+  assigned_alert_contacts = concat(
+    [
+      {
+        alert_contact_id = uptimerobot_integration.failover_webhook.id
+        threshold        = 3
+        recurrence       = 0
+      }
+    ],
+    var.slack_webhook_url != "" ? [
+      {
+        alert_contact_id = uptimerobot_integration.slack[0].id
+        threshold        = 1
+        recurrence       = 0
+      }
+    ] : []
+  )
 }
 
-# Monitor: Delhi Backend API
-resource "uptimerobot_monitor" "delhi_backend" {
-  friendly_name = "Three-Tier Delhi Backend API"
-  type          = "http"
-  url           = "http://${var.delhi_backend_lb_ip}:3001/health"
+# Note: Backend LBs are internal and cannot be monitored by UptimeRobot
+# Backend health is monitored through frontend application responses
 
-  interval = 300
+# Public Status Page
+resource "uptimerobot_psp" "main" {
+  name = "Three-Tier App Status"
 
-  alert_contact {
-    id         = uptimerobot_alert_contact.email.id
-    threshold  = 1
-    recurrence = 0
-  }
-}
-
-# Monitor: Chennai Backend API
-resource "uptimerobot_monitor" "chennai_backend" {
-  friendly_name = "Three-Tier Chennai Backend API"
-  type          = "http"
-  url           = "http://${var.chennai_backend_lb_ip}:3001/health"
-
-  interval = 300
-
-  alert_contact {
-    id         = uptimerobot_alert_contact.email.id
-    threshold  = 1
-    recurrence = 0
-  }
-}
-
-# Status Page (public status page for your app)
-resource "uptimerobot_status_page" "main" {
-  friendly_name = "Three-Tier App Status"
-
-  monitors = [
+  monitor_ids = [
     uptimerobot_monitor.delhi_frontend.id,
     uptimerobot_monitor.chennai_frontend.id,
   ]
@@ -152,5 +115,5 @@ output "chennai_frontend_monitor_id" {
 }
 
 output "status_page_url" {
-  value = "https://stats.uptimerobot.com/${uptimerobot_status_page.main.id}"
+  value = uptimerobot_psp.main.url_key != "" ? "https://stats.uptimerobot.com/${uptimerobot_psp.main.url_key}" : "Check PSP resource for URL"
 }

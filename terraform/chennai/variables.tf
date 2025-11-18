@@ -81,6 +81,7 @@ variable "autoscaling_max" {
 variable "vpc_cidr" {
   description = "VPC CIDR block"
   type        = string
+  default     = "10.20.0.0/16"
 }
 
 variable "github_repo_url" {
@@ -92,11 +93,13 @@ variable "github_repo_url" {
 variable "delhi_db_primary_ip" {
   description = "Delhi primary database IP for replication and write operations"
   type        = string
+  default     = ""
 }
 
 variable "delhi_db_primary_id" {
   description = "Delhi primary database instance ID for replica setup"
   type        = string
+  default     = ""
 }
 
 variable "is_primary_region" {

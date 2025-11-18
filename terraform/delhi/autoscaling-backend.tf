@@ -17,7 +17,7 @@ resource "e2e_node" "backend" {
     db_user         = var.db_user
     db_password     = var.db_password
     db_name         = var.db_name
-    db_host         = e2e_dbaas_postgresql.primary.private_ip_address
+    db_host         = e2e_dbaas_postgresql.primary.connectivity_detail
     github_repo_url = var.github_repo_url
   })
 

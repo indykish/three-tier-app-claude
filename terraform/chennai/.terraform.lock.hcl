@@ -6,6 +6,7 @@ provider "registry.terraform.io/e2eterraformprovider/e2e" {
   constraints = "~> 2.2"
   hashes = [
     "h1:H9GR8CEMc2jBaeAaBvAp1GdjSk6xeVxIE0nIQ0E9680=",
+    "h1:tT0MKI1LgqHkN7hkfzcPrJXlZ2l1PwUe7+avXA2t7hQ=",
     "zh:0177ccb9ae32d4c1f4992a7410e58a6044bb90576268eb7618d37c397d6b4eeb",
     "zh:178a23b6f0cf9ec09513e8f33b41ccd381dc9d12fdfae5e88abcb1921f476bdb",
     "zh:234ab05e21c2ad0d5f82178b957b8d433e92fa81ada10ab478016fc85e3da063",
