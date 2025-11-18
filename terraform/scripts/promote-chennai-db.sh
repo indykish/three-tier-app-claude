@@ -4,6 +4,16 @@
 
 set -e
 
+# Source Terraform-generated configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "${SCRIPT_DIR}/.env" ]; then
+    source "${SCRIPT_DIR}/.env"
+else
+    echo "ERROR: Configuration file not found at ${SCRIPT_DIR}/.env"
+    echo "Run 'terraform apply' first to generate the configuration."
+    exit 1
+fi
+
 echo "=== Chennai Database Promotion Script ==="
 echo "WARNING: This will promote Chennai replica to primary."
 echo "Ensure Delhi primary is confirmed DOWN before proceeding."
@@ -21,9 +31,9 @@ echo "Step 1: Reconfiguring Chennai backends to use local database for writes...
 CHENNAI_DB_IP=$(cd ../chennai && terraform output -raw db_replica_private_ip)
 
 cat > /tmp/chennai-promote.env <<EOF
-PORT=3001
-DATABASE_URL=postgresql://dbadmin:YOUR_PASSWORD@${CHENNAI_DB_IP}:5432/appdb
-DATABASE_URL_WRITE=postgresql://dbadmin:YOUR_PASSWORD@${CHENNAI_DB_IP}:5432/appdb
+PORT=${BACKEND_PORT}
+DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${CHENNAI_DB_IP}:5432/${DB_NAME}
+DATABASE_URL_WRITE=postgresql://${DB_USER}:${DB_PASSWORD}@${CHENNAI_DB_IP}:5432/${DB_NAME}
 NODE_ENV=production
 CORS_ORIGINS=*
 REGION=chennai

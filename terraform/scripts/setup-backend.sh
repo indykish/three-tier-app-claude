@@ -22,10 +22,11 @@ npm install
 npm run build
 
 # Create environment file
-# Note: Update DATABASE_URL with actual DB connection from Terraform outputs
-cat > /opt/app/backend/.env <<'ENVFILE'
-PORT=3001
-DATABASE_URL=postgresql://dbadmin:password@localhost:5432/appdb
+# Note: This script expects DB_* variables to be passed from Terraform
+# The values come from terraform.tfvars via the generated .env file
+cat > /opt/app/backend/.env <<ENVFILE
+PORT=${BACKEND_PORT:-3001}
+DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}
 NODE_ENV=production
 CORS_ORIGINS=*
 ENVFILE
