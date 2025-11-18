@@ -21,7 +21,7 @@ A production-ready proof of concept demonstrating how to architect, deploy, and 
 
 ### Key Features:
 
-- **Frontend Tier** - React application with Material-UI for dynamic branding themes
+- **Frontend Tier** - React application with Material-UI demonstrating dynamic branding of themes
 - **API Tier** - Express.js REST API handling business logic and data operations
 - **Database Tier** - PostgreSQL with JSONB storage and cross-region replication
 - **Multi-Region Deployment** - Active/active architecture across Delhi and Chennai regions
@@ -30,12 +30,12 @@ A production-ready proof of concept demonstrating how to architect, deploy, and 
 
 ### E2E Networks Platform
 
-This project uses E2E Networks, a cloud platform with data centers across India (Delhi, Mumbai, Chennai, Bangalore) offering VPC isolation, managed databases, load balancing, and native Terraform support.
+This project uses E2E Networks, a cloud platform with data centers across India (Delhi, Mumbai, Chennai) offering VPC isolation, managed databases, load balancing, and native Terraform support.
 
 **Getting Started:**
 - [Cloud Console](https://myaccount.e2enetworks.com)
 - [Documentation](https://docs.e2enetworks.com)
-- [Terraform Provider](https://registry.terraform.io/providers/e2eterraformprovider/e2e/latest)
+- [E2E Terraform Provider](https://registry.terraform.io/providers/e2eterraformprovider/e2e/latest)
 
 ---
 
@@ -109,7 +109,7 @@ Application downtime directly impacts revenue and customer trust. A single-regio
 - Node.js + Express (Backend API)
 - React (Frontend)
 - UptimeRobot (Synthetic Monitoring)
-- AWS Route 53 (DNS with Health Checks)
+- AWS Route 53 (DNS with Health Checks) or alternate
 
 **Prerequisites for Production Deployment:**
 - E2E Networks account with API credentials
@@ -117,7 +117,7 @@ Application downtime directly impacts revenue and customer trust. A single-regio
 - PostgreSQL 13+ (managed via E2E DBaaS)
 - Terraform 1.0+
 - SSH key pair for VM access
-- AWS account for Route 53 DNS
+- AWS account for Route 53 DNS or alternate
 - Domain name for public access
 
 ---
@@ -168,46 +168,46 @@ This guide implements **Active/Active** architecture where:
     │   (Primary Write)   │                       │   (Read Replica)    │
     └─────────────────────┘                       └─────────────────────┘
               │                                                 │
-    ┌─────────┴─────────┐                           ┌─────────┴─────────┐
-    │   Frontend Tier   │                           │   Frontend Tier   │
-    │  ┌─────────────┐  │                           │  ┌─────────────┐  │
-    │  │  Frontend   │  │                           │  │  Frontend   │  │
-    │  │     LB      │  │                           │  │     LB      │  │
-    │  └──────┬──────┘  │                           │  └──────┬──────┘  │
-    │         │         │                           │         │         │
-    │  ┌──────▼──────┐  │                           │  ┌──────▼──────┐  │
-    │  │ Autoscaling │  │                           │  │ Autoscaling │  │
-    │  │   Group     │  │                           │  │   Group     │  │
-    │  │ (Caddy+React)│  │                           │  │ (Caddy+React)│  │
-    │  └─────────────┘  │                           │  └─────────────┘  │
-    └───────────────────┘                           └───────────────────┘
+    ┌─────────┴─────────┐                             ┌─────────┴─────────┐
+    │   Frontend Tier   │                             │   Frontend Tier   │
+    │  ┌─────────────┐  │                             │  ┌─────────────┐  │
+    │  │  Frontend   │  │                             │  │  Frontend   │  │
+    │  │     LB      │  │                             │  │     LB      │  │
+    │  └──────┬──────┘  │                             │  └──────┬──────┘  │
+    │         │         │                             │         │         │
+    │  ┌──────▼──────┐  │                             │  ┌──────▼──────┐  │
+    │  │ Autoscaling │  │                             │  │ Autoscaling │  │
+    │  │   Group     │  │                             │  │   Group     │  │
+    │  │(Caddy+React)│  │                             │  │(Caddy+React)│  │
+    │  └─────────────┘  │                             │  └─────────────┘  │
+    └───────────────────┘                             └───────────────────┘
               │                                                 │
-    ┌─────────┴─────────┐                           ┌─────────┴─────────┐
-    │   Backend Tier    │                           │   Backend Tier    │
-    │  ┌─────────────┐  │                           │  ┌─────────────┐  │
-    │  │  Backend    │  │                           │  │  Backend    │  │
-    │  │     LB      │  │                           │  │     LB      │  │
-    │  └──────┬──────┘  │                           │  └──────┬──────┘  │
-    │         │         │                           │         │         │
-    │  ┌──────▼──────┐  │                           │  ┌──────▼──────┐  │
-    │  │ Autoscaling │  │                           │  │ Autoscaling │  │
-    │  │   Group     │  │                           │  │   Group     │  │
-    │  │(Node/Express)│  │                           │  │(Node/Express)│  │
-    │  └─────────────┘  │                           │  └─────────────┘  │
-    └───────────────────┘                           └───────────────────┘
+    ┌─────────┴─────────┐                             ┌─────────┴─────────┐
+    │   Backend Tier    │                             │   Backend Tier    │
+    │  ┌─────────────┐  │                             │  ┌─────────────┐  │
+    │  │  Backend    │  │                             │  │  Backend    │  │
+    │  │     LB      │  │                             │  │     LB      │  │
+    │  └──────┬──────┘  │                             │  └──────┬──────┘  │
+    │         │         │                             │         │         │
+    │  ┌──────▼──────┐  │                             │  ┌──────▼──────┐  │
+    │  │ Autoscaling │  │                             │  │ Autoscaling │  │
+    │  │   Group     │  │                             │  │   Group     │  │
+    │  │(Node/Express)│ │                             │  │(Node/Express)│ │
+    │  └─────────────┘  │                             │  └─────────────┘  │
+    └───────────────────┘                             └───────────────────┘
               │                                                 │
-    ┌─────────┴─────────┐                           ┌─────────┴─────────┐
-    │  Database Tier    │                           │  Database Tier    │
-    │  ┌─────────────┐  │                           │  ┌─────────────┐  │
-    │  │  PgPool-II  │  │                           │  │  PgPool-II  │  │
-    │  │   (Proxy)   │  │                           │  │   (Proxy)   │  │
-    │  └──────┬──────┘  │                           │  └──────┬──────┘  │
-    │         │         │                           │         │         │
-    │  ┌──────▼──────┐  │                           │  ┌──────▼──────┐  │
-    │  │ PostgreSQL  │◄─┼── Streaming Replication ──┼──►│ PostgreSQL  │  │
-    │  │  (PRIMARY)  │  │                           │  │  (REPLICA)  │  │
-    │  └─────────────┘  │                           │  └─────────────┘  │
-    └───────────────────┘                           └───────────────────┘
+    ┌─────────┴─────────┐                             ┌─────────┴─────────┐
+    │  Database Tier    │                             │  Database Tier    │
+    │  ┌─────────────┐  │                             │  ┌─────────────┐  │
+    │  │  PgPool-II* │  │                             │  │  PgPool-II* │  │
+    │  │  (?Proxy)   │  │                             │  │  (?Proxy)   │  │
+    │  └──────┬──────┘  │                             │  └──────┬──────┘  │
+    │         │         │                             │         │         │
+    │  ┌──────▼──────┐  │                             │  ┌──────▼──────┐  │
+    │  │ PostgreSQL  │◄─┼── Streaming Replication ────┼─►│ PostgreSQL  │  │
+    │  │  (PRIMARY)  │  │                             │  │  (REPLICA)  │  │
+    │  └─────────────┘  │                             │  └─────────────┘  │
+    └───────────────────┘                             └───────────────────┘
 ```
 
 ### Traffic Flow
@@ -217,7 +217,7 @@ This guide implements **Active/Active** architecture where:
 3. **Caddy** → Serves static React app, proxies API calls
 4. **Backend LB** → Distributes to autoscaled Node.js instances
 5. **Node.js API** → Processes request, queries database via PgPool
-6. **PgPool-II** → Routes reads locally, writes to primary
+6. **PgPool-II?** → (*/?) is marked here to reason out its purpose: Routes reads locally, writes to primary
 7. **PostgreSQL** → Processes queries, replicates data
 
 ---
@@ -231,10 +231,10 @@ This guide implements **Active/Active** architecture where:
 | **VPC** | e2e_vpc | 10.10.0.0/16 (Delhi), 10.20.0.0/16 (Chennai) | Network isolation |
 | **Frontend VMs** | e2e_autoscaling | C3.8GB (4 vCPU, 8GB RAM, 100GB SSD) | React + Caddy servers |
 | **Backend VMs** | e2e_autoscaling | C3.8GB (4 vCPU, 8GB RAM, 100GB SSD) | Node.js Express API |
-| **Frontend LB** | e2e_loadbalancer | External, HTTP mode | Public traffic entry |
-| **Backend LB** | e2e_loadbalancer | Internal, HTTP mode | API load distribution |
-| **Database** | e2e_dbaas_postgresql | DBS.8GB | Managed PostgreSQL |
-| **PgPool VM** | e2e_node | C2.4GB | Database proxy |
+| **Frontend LB** | e2e_loadbalancer | E2E-LB-2 External, HTTP mode | Public traffic entry |
+| **Backend LB** | e2e_loadbalancer | E2E-LB-2 Internal, HTTP mode | API load distribution |
+| **Database** | e2e_dbaas_postgresql | DBS.16GB | Managed PostgreSQL |
+| **PgPool VM */?** | e2e_node | C3.8GB | Database proxy |
 
 ### Why These Choices?
 
@@ -256,7 +256,7 @@ This guide implements **Active/Active** architecture where:
 - JSON/JSONB for flexible schemas
 - Mature, battle-tested
 
-**PgPool-II:**
+**PgPool-II(*)?:**
 - Connection pooling reduces DB load
 - Automatic read/write splitting
 - Health monitoring built-in
@@ -318,8 +318,8 @@ This section covers setting up the application for local development on your mac
 
 ## Prerequisites
 
-- Node.js 18+
-- PostgreSQL 13+
+- Node.js 22+
+- PostgreSQL 16+
 - npm or yarn
 
 ## Quick Start
@@ -329,13 +329,13 @@ This section covers setting up the application for local development on your mac
 Create a PostgreSQL database:
 
 ```bash
-createdb branding_db
+createdb appdb
 ```
 
 Or using psql:
 
 ```sql
-CREATE DATABASE branding_db;
+CREATE DATABASE appdb;
 ```
 
 ### 2. Configure Backend
@@ -347,7 +347,7 @@ cd backend
 cp .env.example .env
 
 # Edit .env with your database connection
-# DATABASE_URL=postgresql://user:password@localhost:5432/branding_db
+# DATABASE_URL=postgresql://user:password@localhost:5432/appdb
 ```
 
 ### 3. Install Dependencies
@@ -475,7 +475,7 @@ CREATE TABLE themes (
 ### Backend (.env)
 
 ```bash
-DATABASE_URL=postgresql://user:password@localhost:5432/branding_db
+DATABASE_URL=postgresql://user:password@localhost:5432/appdb
 PORT=3001
 ```
 
