@@ -70,7 +70,7 @@ A complete three-tier application featuring a React frontend, Express.js backend
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │   React App     │     │   Express API   │     │   PostgreSQL    │
 │   (Port 5173)   │ ──► │   (Port 3001)   │ ──► │   Database      │
-│   /branding     │     │   /backend      │     │                 │
+│   /frontend     │     │   /backend      │     │                 │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
@@ -706,7 +706,7 @@ cd backend
 npm install
 
 # Install frontend dependencies
-cd ../branding
+cd ../frontend
 npm install
 ```
 
@@ -731,7 +731,7 @@ The backend will start on http://localhost:3001
 
 **Terminal 2 - Frontend:**
 ```bash
-cd branding
+cd frontend
 npm run dev
 ```
 
@@ -753,7 +753,7 @@ npm start            # Run production build
 ### Frontend Development
 
 ```bash
-cd branding
+cd frontend
 npm run dev          # Start Vite dev server
 npm run build        # Production build
 npm test             # Run tests
@@ -829,7 +829,7 @@ PORT=3001
 
 ### Frontend (optional)
 
-Create a `.env` file in `/branding`:
+Create a `.env` file in `/frontend`:
 
 ```bash
 VITE_API_URL=http://localhost:3001
@@ -852,7 +852,7 @@ three-tier-app-claude/
 │   │       └── initDb.ts    # Database initialization
 │   ├── package.json
 │   └── tsconfig.json
-├── branding/                 # React frontend
+├── frontend/                 # React frontend
 │   ├── src/
 │   │   ├── App.tsx          # Main app with API integration
 │   │   ├── services/
