@@ -11,8 +11,11 @@ resource "e2e_node" "frontend" {
   vpc_id     = e2e_vpc.delhi_vpc.id
   ssh_keys   = [var.ssh_key_name]
 
-  # VM provisioning script
-  start_script = file("${path.module}/../scripts/setup-frontend.sh")
+  # VM provisioning script - variables injected from terraform.tfvars
+  start_script = templatefile("${path.module}/../scripts/setup-frontend.sh", {
+    github_repo_url = var.github_repo_url
+    region          = "delhi"
+  })
 
   depends_on = [e2e_vpc.delhi_vpc]
 }

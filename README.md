@@ -274,9 +274,33 @@ git clone https://github.com/indykish/three-tier-app-claude.git
 cd three-tier-app-claude/terraform
 ```
 
-**Configure credentials:** See [`terraform/terraform.tfvars`](terraform/terraform.tfvars) for instructions on setting up E2E Networks credentials via environment variables.
+**1. Set E2E Networks credentials as environment variables:**
 
-**Edit configuration values** in `terraform.tfvars` as needed (SSH key name, database password, etc.).
+```bash
+export TF_VAR_e2e_api_key="your-api-key-here"
+export TF_VAR_e2e_auth_token="your-auth-token-here"
+export TF_VAR_project_id="your-project-id"
+```
+
+**2. Edit `terraform/terraform.tfvars` with your configuration:**
+
+| Parameter | Description | Default | Required |
+|-----------|-------------|---------|----------|
+| `ssh_key_name` | SSH key name in E2E account | `"KishoreMac"` | Yes |
+| `image_name` | Base OS image for VMs | `"Ubuntu-24.04"` | Yes |
+| `vm_plan` | VM size (4 vCPU, 8GB RAM) | `"C3.8GB"` | Yes |
+| `db_plan` | Database plan | `"DBS.8GB"` | Yes |
+| `db_version` | PostgreSQL version | `"16"` | Yes |
+| `db_name` | Database name | `"appdb"` | Yes |
+| `db_user` | Database username | `"dbadmin"` | Yes |
+| `db_password` | Database password | - | Yes (change default!) |
+| `frontend_port` | Frontend service port | `80` | Yes |
+| `backend_port` | Backend API port | `3001` | Yes |
+| `autoscaling_min` | Min instances per tier | `1` | Yes |
+| `autoscaling_max` | Max instances per tier | `5` | Yes |
+| `vpc_cidr_delhi` | Delhi VPC CIDR block | `"10.10.0.0/16"` | Yes |
+| `vpc_cidr_chennai` | Chennai VPC CIDR block | `"10.20.0.0/16"` | Yes |
+| `github_repo_url` | Application repository URL | `"https://github.com/indykish/three-tier-app-claude.git"` | Yes |
 
 ### Phase 2: Validate Terraform Configurations (Dry-Run)
 
@@ -325,57 +349,9 @@ This dry-run step is critical to catch issues like:
 - Incorrect resource references
 - Type mismatches
 
-### Phase 3: Understanding the Setup Scripts
+### Phase 3: Setup Scripts
 
-The Terraform configuration uses `start_script` to automatically provision VMs on first boot. These scripts are located in `terraform/scripts/`:
-
-**`setup-frontend.sh`** - Frontend VM provisioning:
-```bash
-#!/bin/bash
-# Executed automatically when frontend VM boots
-# 1. Updates system packages
-# 2. Installs Node.js 18.x LTS
-# 3. Installs Caddy web server
-# 4. Clones the application repository
-# 5. Builds the React frontend
-# 6. Configures Caddy as reverse proxy
-# 7. Starts frontend service
-```
-
-**`setup-backend.sh`** - Backend VM provisioning:
-```bash
-#!/bin/bash
-# Executed automatically when backend VM boots
-# 1. Updates system packages
-# 2. Installs Node.js 18.x LTS
-# 3. Installs PM2 process manager
-# 4. Clones the application repository
-# 5. Installs backend dependencies
-# 6. Configures environment variables
-# 7. Starts Express API with PM2
-```
-
-**Customization Required:**
-
-Before deployment, modify these scripts to match your environment:
-
-```bash
-# Edit terraform/scripts/setup-frontend.sh
-- Update GIT_REPO to your repository URL
-- Configure API_URL to point to your backend load balancer
-- Adjust Caddy configuration for your domain
-
-# Edit terraform/scripts/setup-backend.sh
-- Update GIT_REPO to your repository URL
-- Set DATABASE_URL to use PgPool or direct connection
-- Configure environment-specific variables
-```
-
-**Important Notes:**
-- Scripts run as root during VM initialization
-- Logs are available in `/var/log/cloud-init-output.log`
-- Scripts must be idempotent (safe to run multiple times)
-- VM won't be "ready" until scripts complete successfully
+Terraform auto-provisions VMs using `terraform/scripts/setup-frontend.sh` and `setup-backend.sh`. Configuration values from `terraform.tfvars` are automatically injected into these scripts via Terraform's `templatefile()` function - no manual editing required. Scripts install dependencies, clone your repository, build the application, and start services. VM initialization logs: `/var/log/cloud-init-output.log`.
 
 ### Phase 4: Deploy Delhi Region (Primary)
 

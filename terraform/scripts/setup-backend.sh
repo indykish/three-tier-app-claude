@@ -14,7 +14,7 @@ apt-get install -y nodejs git
 # Clone application
 mkdir -p /opt/app
 cd /opt/app
-git clone https://github.com/indykish/three-tier-app-claude.git .
+git clone ${github_repo_url} .
 
 # Setup backend
 cd /opt/app/backend
@@ -22,11 +22,10 @@ npm install
 npm run build
 
 # Create environment file
-# Note: This script expects DB_* variables to be passed from Terraform
-# The values come from terraform.tfvars via the generated .env file
+# Note: Variables are injected by Terraform templatefile() from terraform.tfvars
 cat > /opt/app/backend/.env <<ENVFILE
-PORT=${BACKEND_PORT:-3001}
-DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}
+PORT=${backend_port}
+DATABASE_URL=postgresql://${db_user}:${db_password}@${db_host}:5432/${db_name}
 NODE_ENV=production
 CORS_ORIGINS=*
 ENVFILE

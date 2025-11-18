@@ -21,7 +21,7 @@ apt-get install -y caddy
 # Clone application
 mkdir -p /opt/app
 cd /opt/app
-git clone https://github.com/indykish/three-tier-app-claude.git .
+git clone ${github_repo_url} .
 
 # Build frontend
 cd /opt/app/frontend
@@ -55,6 +55,6 @@ systemctl restart caddy
 
 # Create health check endpoint
 mkdir -p /opt/app/frontend/dist/health
-echo '{"status": "healthy", "service": "frontend", "region": "delhi"}' > /opt/app/frontend/dist/health/index.html
+echo '{"status": "healthy", "service": "frontend", "region": "${region}"}' > /opt/app/frontend/dist/health/index.html
 
 echo "Frontend setup completed successfully"
