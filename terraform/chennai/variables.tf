@@ -50,7 +50,7 @@ variable "db_version" {
 variable "db_name" {
   description = "Database name"
   type        = string
-  default     = "branding_db"
+  default     = "appdb"
 }
 
 variable "db_user" {
