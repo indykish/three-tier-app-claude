@@ -547,7 +547,7 @@ systemctl start caddy
 
 ```bash
 # 1. Verify database replication status
-psql -h <chennai-db-ip> -U dbadmin -d branding_db -c "
+psql -h <chennai-db-ip> -U dbadmin -d appdb -c "
   SELECT now() - pg_last_xact_replay_timestamp() AS lag;"
 # Lag should be < 1 second
 
@@ -559,7 +559,7 @@ cd terraform/scripts
 ./promote-chennai-db.sh
 
 # 4. Verify Chennai is now accepting writes
-psql -h <chennai-db-ip> -U dbadmin -d branding_db -c "
+psql -h <chennai-db-ip> -U dbadmin -d appdb -c "
   SELECT pg_is_in_recovery();"
 # Should return 'f' (false) indicating it's now primary
 
