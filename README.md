@@ -1,6 +1,6 @@
 <div align="center">
 
-![E2E Networks](https://e2enetworks.com/OnlyE2E.svg)
+<img src="https://e2enetworks.com/OnlyE2E.svg" alt="E2E Networks" width="180">
 
 # 🚀 Three-Tier Application on E2E Networks
 
